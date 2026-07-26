@@ -1,0 +1,154 @@
+{
+  "sword": {
+    "name": "剑修",
+    "skills": [
+      {
+        "id": "sword_qi_slash",
+        "name": "剑气斩",
+        "slot": 1,
+        "cooldown": 5.0,
+        "damage": 300,
+        "cast_time": 0.2,
+        "effect_type": "line_aoe",
+        "aoe_length": 200.0,
+        "aoe_width": 40.0,
+        "projectile_speed": 0.0,
+        "projectile_color": "#FFD700",
+        "description": "向直线方向挥出剑气，造成范围伤害"
+      },
+      {
+        "id": "sword_fly_blade",
+        "name": "御剑术",
+        "slot": 2,
+        "cooldown": 8.0,
+        "damage": 500,
+        "cast_time": 0.3,
+        "effect_type": "projectile",
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 400.0,
+        "projectile_color": "#FFD700",
+        "description": "御剑飞行攻击单个敌人"
+      },
+      {
+        "id": "sword_shield",
+        "name": "剑气护体",
+        "slot": 3,
+        "cooldown": 12.0,
+        "damage": 0,
+        "cast_time": 0.1,
+        "effect_type": "shield",
+        "shield_amount": 300,
+        "shield_duration": 5.0,
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 0.0,
+        "projectile_color": "#FFD700",
+        "description": "凝聚剑气形成护盾，吸收300伤害"
+      }
+    ]
+  },
+  "talisman": {
+    "name": "符修",
+    "skills": [
+      {
+        "id": "talisman_stun",
+        "name": "定身符",
+        "slot": 1,
+        "cooldown": 6.0,
+        "damage": 0,
+        "cast_time": 0.3,
+        "effect_type": "projectile",
+        "stun_duration": 2.0,
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 350.0,
+        "projectile_color": "#4169E1",
+        "description": "投掷定身符，使敌人定身2秒"
+      },
+      {
+        "id": "talisman_thunder",
+        "name": "雷符",
+        "slot": 2,
+        "cooldown": 4.0,
+        "damage": 400,
+        "cast_time": 0.4,
+        "effect_type": "circle_aoe",
+        "aoe_radius": 120.0,
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 0.0,
+        "projectile_color": "#4169E1",
+        "description": "召唤雷电，对范围内敌人造成400伤害"
+      },
+      {
+        "id": "talisman_fire",
+        "name": "火符",
+        "slot": 3,
+        "cooldown": 3.0,
+        "damage": 100,
+        "cast_time": 0.2,
+        "effect_type": "projectile",
+        "dot_damage": 100,
+        "dot_duration": 5.0,
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 300.0,
+        "projectile_color": "#FF4500",
+        "description": "投掷火符，命中后每秒造成100伤害，持续5秒"
+      }
+    ]
+  },
+  "pill": {
+    "name": "丹修",
+    "skills": [
+      {
+        "id": "pill_heal",
+        "name": "回春丹",
+        "slot": 1,
+        "cooldown": 10.0,
+        "damage": 0,
+        "heal_amount": 300,
+        "cast_time": 0.3,
+        "effect_type": "self_heal",
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 0.0,
+        "projectile_color": "#32CD32",
+        "description": "服用回春丹，回复300生命值"
+      },
+      {
+        "id": "pill_shield",
+        "name": "护体丹",
+        "slot": 2,
+        "cooldown": 8.0,
+        "damage": 0,
+        "cast_time": 0.2,
+        "effect_type": "shield",
+        "shield_amount": 400,
+        "shield_duration": 6.0,
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 0.0,
+        "projectile_color": "#32CD32",
+        "description": "服用护体丹，获得400点护盾"
+      },
+      {
+        "id": "pill_poison",
+        "name": "毒丹",
+        "slot": 3,
+        "cooldown": 6.0,
+        "damage": 50,
+        "cast_time": 0.2,
+        "effect_type": "projectile",
+        "dot_damage": 50,
+        "dot_duration": 8.0,
+        "aoe_length": 0.0,
+        "aoe_width": 0.0,
+        "projectile_speed": 280.0,
+        "projectile_color": "#9ACD32",
+        "description": "投掷毒丹，命中后每秒造成50伤害，持续8秒"
+      }
+    ]
+  }
+}

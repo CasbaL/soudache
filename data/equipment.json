@@ -1,0 +1,93 @@
+{
+  "weapons": [
+    {
+      "id": "sword_001",
+      "name": "青钢剑",
+      "type": "weapon",
+      "rarity": "white",
+      "baseAttack": 40,
+      "baseCritRate": 0.02,
+      "baseCritDamage": 0.1,
+      "icon": "res://assets/icons/sword_001.png",
+      "description": "普通的青钢剑，适合初学者使用"
+    },
+    {
+      "id": "sword_002",
+      "name": "灵铁剑",
+      "type": "weapon",
+      "rarity": "green",
+      "baseAttack": 80,
+      "baseCritRate": 0.04,
+      "baseCritDamage": 0.15,
+      "icon": "res://assets/icons/sword_002.png",
+      "description": "灵铁打造的长剑，剑身泛着淡淡灵光"
+    },
+    {
+      "id": "sword_003",
+      "name": "宝铁剑",
+      "type": "weapon",
+      "rarity": "blue",
+      "baseAttack": 150,
+      "baseCritRate": 0.06,
+      "baseCritDamage": 0.2,
+      "icon": "res://assets/icons/sword_003.png",
+      "description": "宝铁锻造的利剑，剑气逼人"
+    }
+  ],
+  "armors": [
+    {
+      "id": "armor_001",
+      "name": "布衣",
+      "type": "armor",
+      "rarity": "white",
+      "baseDefense": 20,
+      "baseHealth": 50,
+      "icon": "res://assets/icons/armor_001.png",
+      "description": "普通的布衣，提供基本防护"
+    },
+    {
+      "id": "armor_002",
+      "name": "灵纹甲",
+      "type": "armor",
+      "rarity": "green",
+      "baseDefense": 45,
+      "baseHealth": 120,
+      "icon": "res://assets/icons/armor_002.png",
+      "description": "刻有灵纹的护甲，防御力更强"
+    },
+    {
+      "id": "armor_003",
+      "name": "宝纹甲",
+      "type": "armor",
+      "rarity": "blue",
+      "baseDefense": 80,
+      "baseHealth": 250,
+      "icon": "res://assets/icons/armor_003.png",
+      "description": "宝纹护甲，坚不可摧"
+    }
+  ],
+  "accessories": [
+    {
+      "id": "accessory_001",
+      "name": "灵石戒指",
+      "type": "accessory",
+      "rarity": "white",
+      "baseHealth": 30,
+      "effects": [],
+      "icon": "res://assets/icons/accessory_001.png",
+      "description": "灵石打造的戒指，增加少量生命"
+    },
+    {
+      "id": "accessory_002",
+      "name": "灵力项链",
+      "type": "accessory",
+      "rarity": "green",
+      "baseHealth": 70,
+      "effects": [
+        {"type": "passive", "name": "生命强化", "value": 0.05}
+      ],
+      "icon": "res://assets/icons/accessory_002.png",
+      "description": "蕴含灵力的项链，增强生命力"
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+## 游戏管理器 - 自动加载单例
+## 管理游戏全局状态
+extends Node
+
+# 游戏状态
+enum GameState {
+	MENU,
+	PLAYING,
+	PAUSED,
+	GAME_OVER,
+	VICTORY
+}
+
+# 当前状态
+var current_state: GameState = GameState.MENU
+
+# 当前层数
+var current_layer: int = 1
+
+# 玩家数据
+var player_data: Dictionary = {
+	"health": 500,
+	"max_health": 500,
+	"attack": 100,
+	"defense": 50,
+	"crit_rate": 0.05,
+	"crit_damage": 1.5,
+	"speed": 200.0
+}
+
+# 背包数据
+var inventory: Array[Dictionary] = []
+var max_inventory_size: int = 10
+
+# 装备快捷引用（与 EquipmentSystem 同步）
+var equipped_items: Dictionary = {}  # {slot: EquipmentData}
+
+# 持久化资源（洞府仓库，跨局保留）
+var storage: Dictionary = {
+	"spirit_stone": 0,
+	"herb": 0,
+	"ore": 0,
+	"artifact_spirit": 0,
+}
+
+# 信号
+signal game_state_changed(new_state: GameState)
+signal player_health_changed(new_health: int)
+signal inventory_changed()
+signal layer_changed(new_layer: int)
+signal storage_changed()
+
+func _ready() -> void:
+	# 连接装备变化信号
+	if has_node("/root/EquipmentSystem"):
+		EquipmentSystem.equipment_changed.connect(_on_equipment_changed)
+
+## 装备变化回调，同步引用
+func _on_equipment_changed(_slot: int) -> void:
+	equipped_items = EquipmentSystem.equipped.duplicate()
+
+## 获取含装备加成的总攻击力
+func get_total_attack() -> int:
+	var bonus = EquipmentSystem.get_total_stats()
+	return int(player_data.attack + bonus.attack)
+
+## 获取含装备加成的总防御力
+func get_total_defense() -> int:
+	var bonus = EquipmentSystem.get_total_stats()
+	return int(player_data.defense + bonus.defense)
+
+## 获取含装备加成的总生命值
+func get_total_max_health() -> int:
+	var bonus = EquipmentSystem.get_total_stats()
+	return int(player_data.max_health + bonus.health)
+
+## 获取含装备加成的总暴击率
+func get_total_crit_rate() -> float:
+	var bonus = EquipmentSystem.get_total_stats()
+	return player_data.crit_rate + bonus.crit_rate
+
+## 开始新游戏
+func start_new_game() -> void:
+	current_state = GameState.PLAYING
+	current_layer = 1
+	
+	# 重置玩家数据（选择门派后会被覆盖）
+	player_data = {
+		"health": 500,
+		"max_health": 500,
+		"attack": 100,
+		"defense": 50,
+		"crit_rate": 0.05,
+		"crit_damage": 1.5,
+		"speed": 200.0
+	}
+	
+	# 清空背包
+	inventory.clear()
+	
+	game_state_changed.emit(current_state)
+	
+	# 进入门派选择界面
+	get_tree().change_scene_to_file("res://scenes/ui/faction_select.tscn")
+
+## 暂停游戏
+func pause_game() -> void:
+	if current_state == GameState.PLAYING:
+		current_state = GameState.PAUSED
+		if is_inside_tree():
+			get_tree().paused = true
+		game_state_changed.emit(current_state)
+
+## 恢复游戏
+func resume_game() -> void:
+	if current_state == GameState.PAUSED:
+		current_state = GameState.PLAYING
+		if is_inside_tree():
+			get_tree().paused = false
+		game_state_changed.emit(current_state)
+
+## 游戏结束
+func game_over() -> void:
+	current_state = GameState.GAME_OVER
+	game_state_changed.emit(current_state)
+	# 显示游戏结束UI
+	print("游戏结束！丢失本轮物资")
+
+## 胜利（成功撤离）
+func victory() -> void:
+	current_state = GameState.VICTORY
+	game_state_changed.emit(current_state)
+	# 保存物资到仓库
+	save_inventory_to_storage()
+	print("成功撤离！物资已保存")
+
+## 玩家受伤
+func player_take_damage(damage: int) -> void:
+	var actual_damage = max(1, damage - player_data.defense)
+	player_data.health = max(0, player_data.health - actual_damage)
+	player_health_changed.emit(player_data.health)
+	
+	if player_data.health <= 0:
+		game_over()
+
+## 玩家治疗
+func player_heal(amount: int) -> void:
+	player_data.health = min(player_data.max_health, player_data.health + amount)
+	player_health_changed.emit(player_data.health)
+
+## 添加物品到背包
+func add_to_inventory(item: Dictionary) -> bool:
+	if inventory.size() >= max_inventory_size:
+		print("背包已满！")
+		return false
+	
+	inventory.append(item)
+	inventory_changed.emit()
+	return true
+
+## 从背包移除物品
+func remove_from_inventory(index: int) -> Dictionary:
+	if index < 0 or index >= inventory.size():
+		return {}
+	
+	var item = inventory[index]
+	inventory.remove_at(index)
+	inventory_changed.emit()
+	return item
+
+## 保存背包到仓库（撤离时调用）
+func save_inventory_to_storage() -> void:
+	# TODO: 实现仓库系统
+	print("保存 %d 个物品到仓库" % inventory.size())
+
+## 计算战斗力
+func get_combat_power() -> int:
+	return int(
+		player_data.attack * 1.0 +
+		player_data.defense * 0.5 +
+		player_data.max_health * 0.2 +
+		player_data.crit_rate * 1000 +
+		player_data.crit_damage * 100
+	)
+
+## 进入下一层
+func go_to_next_layer() -> void:
+	current_layer += 1
+	layer_changed.emit(current_layer)
+	
+	if current_layer > 3:
+		# 通关
+		victory()
+	else:
+		# 加载下一层地图
+		print("进入第 %d 层" % current_layer)
+		# TODO: 生成新地图
+
+# ─── 持久化资源（仓库）操作 ───
+
+## 向仓库添加资源
+func add_to_storage(resource_id: String, amount: int) -> void:
+	storage[resource_id] = storage.get(resource_id, 0) + amount
+	storage_changed.emit()
+
+## 从仓库取出资源到背包，返回实际取出数量（0表示失败）
+func withdraw_from_storage(resource_id: String, amount: int) -> int:
+	var available: int = storage.get(resource_id, 0)
+	if available < amount:
+		return 0
+	storage[resource_id] = available - amount
+	storage_changed.emit()
+	return amount
+
+## 将背包中的资源类物品存入仓库
+func deposit_inventory_resources() -> void:
+	for i in range(inventory.size() - 1, -1, -1):
+		var item: Dictionary = inventory[i]
+		var item_id: String = item.get("id", "")
+		if item_id in ["spirit_stone", "herb", "ore", "artifact_spirit"]:
+			var amount: int = item.get("amount", 1)
+			add_to_storage(item_id, amount)
+			inventory.remove_at(i)
+	inventory_changed.emit()
+
+## 获取含建筑加成的最大仓库容量
+func get_storage_capacity() -> Dictionary:
+	var warehouse_level: int = 1
+	if has_node("/root/BuildingSystem"):
+		warehouse_level = BuildingSystem.get_building_level("warehouse")
+	var caps := [
+		{"spirit_stone": 5000, "herb": 200, "ore": 200},
+		{"spirit_stone": 10000, "herb": 500, "ore": 500},
+		{"spirit_stone": 20000, "herb": 1000, "ore": 1000},
+		{"spirit_stone": 50000, "herb": 2000, "ore": 2000},
+		{"spirit_stone": 100000, "herb": 5000, "ore": 5000},
+	]
+	return caps[clampi(warehouse_level - 1, 0, caps.size() - 1)]

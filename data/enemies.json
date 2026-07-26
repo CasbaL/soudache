@@ -1,0 +1,243 @@
+{
+  "layer1": {
+    "name": "幽竹林",
+    "enemies": [
+      {
+        "id": "bamboo_spirit",
+        "name": "竹妖",
+        "maxHealth": 200,
+        "attackDamage": 50,
+        "defense": 20,
+        "speed": 100.0,
+        "attackRange": 50.0,
+        "attackCooldown": 1.0,
+        "detectRange": 200.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [10, 30], "chance": 1.0},
+          {"id": "herb", "name": "灵草", "amount": [1, 3], "chance": 0.5}
+        ],
+        "sprite": "res://assets/sprites/enemies/bamboo_spirit.png"
+      },
+      {
+        "id": "bamboo_archer",
+        "name": "竹妖射手",
+        "maxHealth": 150,
+        "attackDamage": 70,
+        "defense": 15,
+        "speed": 80.0,
+        "attackRange": 200.0,
+        "attackCooldown": 1.5,
+        "detectRange": 250.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [15, 40], "chance": 1.0},
+          {"id": "herb", "name": "灵草", "amount": [2, 4], "chance": 0.6}
+        ],
+        "sprite": "res://assets/sprites/enemies/bamboo_archer.png"
+      }
+    ],
+    "elite": [
+      {
+        "id": "bamboo_elite",
+        "name": "竹妖精英",
+        "maxHealth": 1000,
+        "attackDamage": 120,
+        "defense": 50,
+        "speed": 90.0,
+        "attackRange": 60.0,
+        "attackCooldown": 0.8,
+        "detectRange": 300.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [100, 200], "chance": 1.0},
+          {"id": "herb", "name": "灵草", "amount": [10, 20], "chance": 0.8},
+          {"id": "equipment", "name": "装备", "rarity": "green", "chance": 0.3}
+        ],
+        "sprite": "res://assets/sprites/enemies/bamboo_elite.png"
+      }
+    ],
+    "boss": {
+      "id": "bamboo_king",
+      "name": "竹妖王",
+      "maxHealth": 8000,
+      "attackDamage": 150,
+      "defense": 50,
+      "speed": 70.0,
+      "attackRange": 80.0,
+      "attackCooldown": 0.6,
+      "detectRange": 500.0,
+      "phases": [
+        {
+          "name": "竹叶风暴",
+          "healthRange": [100, 70],
+          "attacks": ["bamboo_leaf_sweep", "poison_breath", "bamboo_spike"]
+        },
+        {
+          "name": "竹林幻影",
+          "healthRange": [70, 40],
+          "attacks": ["bamboo_leaf_sweep", "poison_breath", "bamboo_spike", "bamboo_clone", "bamboo_root"]
+        },
+        {
+          "name": "狂暴竹妖",
+          "healthRange": [40, 0],
+          "attacks": ["bamboo_leaf_sweep", "poison_breath", "bamboo_spike", "bamboo_clone", "bamboo_root", "bamboo_storm"]
+        }
+      ],
+      "dropItems": [
+        {"id": "spirit_stone", "name": "灵石", "amount": [200, 300], "chance": 1.0},
+        {"id": "bamboo_demon_core", "name": "竹妖内丹", "rarity": "blue", "chance": 1.0},
+        {"id": "bamboo_demon_soul", "name": "竹妖王魂", "rarity": "purple", "chance": 0.3},
+        {"id": "technique_fragment", "name": "功法残页", "amount": [2, 5], "chance": 0.5}
+      ],
+      "sprite": "res://assets/sprites/enemies/bamboo_king.png"
+    }
+  },
+  "layer2": {
+    "name": "火焰山",
+    "enemies": [
+      {
+        "id": "fire_spirit",
+        "name": "火灵",
+        "maxHealth": 400,
+        "attackDamage": 100,
+        "defense": 40,
+        "speed": 120.0,
+        "attackRange": 150.0,
+        "attackCooldown": 1.2,
+        "detectRange": 250.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [20, 50], "chance": 1.0},
+          {"id": "fire_crystal", "name": "火晶石", "amount": [1, 3], "chance": 0.6}
+        ],
+        "sprite": "res://assets/sprites/enemies/fire_spirit.png"
+      }
+    ],
+    "elite": [
+      {
+        "id": "fire_giant",
+        "name": "火焰巨人",
+        "maxHealth": 3000,
+        "attackDamage": 200,
+        "defense": 100,
+        "speed": 80.0,
+        "attackRange": 100.0,
+        "attackCooldown": 1.0,
+        "detectRange": 300.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [200, 400], "chance": 1.0},
+          {"id": "fire_crystal", "name": "火晶石", "amount": [10, 20], "chance": 0.8},
+          {"id": "equipment", "name": "装备", "rarity": "blue", "chance": 0.4}
+        ],
+        "sprite": "res://assets/sprites/enemies/fire_giant.png"
+      }
+    ],
+    "boss": {
+      "id": "fire_demon",
+      "name": "火魔",
+      "maxHealth": 15000,
+      "attackDamage": 250,
+      "defense": 80,
+      "speed": 90.0,
+      "attackRange": 120.0,
+      "attackCooldown": 0.5,
+      "detectRange": 500.0,
+      "phases": [
+        {
+          "name": "火焰风暴",
+          "healthRange": [100, 70],
+          "attacks": ["fire_ball", "fire_breath", "magma_ground"]
+        },
+        {
+          "name": "火焰领域",
+          "healthRange": [70, 40],
+          "attacks": ["fire_ball", "fire_breath", "magma_ground", "fire_domain", "fire_charge"]
+        },
+        {
+          "name": "火焰狂暴",
+          "healthRange": [40, 0],
+          "attacks": ["fire_ball", "fire_breath", "magma_ground", "fire_domain", "fire_charge", "fire_meteor", "fire_explosion"]
+        }
+      ],
+      "dropItems": [
+        {"id": "spirit_stone", "name": "灵石", "amount": [500, 800], "chance": 1.0},
+        {"id": "fire_demon_core", "name": "火魔内丹", "rarity": "purple", "chance": 1.0},
+        {"id": "fire_demon_soul", "name": "火魔之魂", "rarity": "gold", "chance": 0.25},
+        {"id": "technique_fragment", "name": "功法残页", "amount": [3, 6], "chance": 0.6}
+      ],
+      "sprite": "res://assets/sprites/enemies/fire_demon.png"
+    }
+  },
+  "layer3": {
+    "name": "天机阁",
+    "enemies": [
+      {
+        "id": "mechanism_beast",
+        "name": "机关兽",
+        "maxHealth": 600,
+        "attackDamage": 150,
+        "defense": 60,
+        "speed": 100.0,
+        "attackRange": 100.0,
+        "attackCooldown": 1.0,
+        "detectRange": 300.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [30, 70], "chance": 1.0},
+          {"id": "gear", "name": "齿轮", "amount": [1, 3], "chance": 0.6}
+        ],
+        "sprite": "res://assets/sprites/enemies/mechanism_beast.png"
+      }
+    ],
+    "elite": [
+      {
+        "id": "mechanism_general",
+        "name": "天机将军",
+        "maxHealth": 8000,
+        "attackDamage": 300,
+        "defense": 120,
+        "speed": 110.0,
+        "attackRange": 120.0,
+        "attackCooldown": 0.8,
+        "detectRange": 350.0,
+        "dropItems": [
+          {"id": "spirit_stone", "name": "灵石", "amount": [500, 1000], "chance": 1.0},
+          {"id": "gear", "name": "齿轮", "amount": [15, 30], "chance": 0.8},
+          {"id": "equipment", "name": "装备", "rarity": "purple", "chance": 0.5}
+        ],
+        "sprite": "res://assets/sprites/enemies/mechanism_general.png"
+      }
+    ],
+    "boss": {
+      "id": "tianji_elder",
+      "name": "天机老人",
+      "maxHealth": 25000,
+      "attackDamage": 400,
+      "defense": 120,
+      "speed": 100.0,
+      "attackRange": 150.0,
+      "attackCooldown": 0.4,
+      "detectRange": 500.0,
+      "phases": [
+        {
+          "name": "机关术",
+          "healthRange": [100, 70],
+          "attacks": ["mechanism_arrow", "rune_trap", "mechanism_summon"]
+        },
+        {
+          "name": "符文之力",
+          "healthRange": [70, 40],
+          "attacks": ["mechanism_arrow", "rune_trap", "mechanism_summon", "rune_shield", "rune_teleport"]
+        },
+        {
+          "name": "天机狂暴",
+          "healthRange": [40, 0],
+          "attacks": ["mechanism_arrow", "rune_trap", "mechanism_summon", "rune_shield", "rune_teleport", "tianji_array", "mechanism_merge"]
+        }
+      ],
+      "dropItems": [
+        {"id": "spirit_stone", "name": "灵石", "amount": [1000, 1500], "chance": 1.0},
+        {"id": "tianji_core", "name": "天机老人内丹", "rarity": "gold", "chance": 1.0},
+        {"id": "tianji_scroll", "name": "天机秘卷", "rarity": "gold", "chance": 0.2},
+        {"id": "technique_fragment", "name": "功法残页", "amount": [5, 10], "chance": 0.8}
+      ],
+      "sprite": "res://assets/sprites/enemies/tianji_elder.png"
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "sword": {
+    "id": "sword",
+    "name": "剑修",
+    "title": "剑气凌云",
+    "description": "近战输出，高爆发。以剑入道，追求极致的攻击力和瞬间爆发。近身战斗，连续挥剑，技能释放快、伤害高。",
+    "playstyle": "burst_melee",
+    "tags": ["近战", "高爆发", "高攻速", "脆皮"],
+    "color": "#FFD700",
+    "stats": {
+      "max_health": 500,
+      "attack": 200,
+      "defense": 80,
+      "speed": 250.0,
+      "crit_rate": 0.1,
+      "crit_damage": 1.8,
+      "attack_range": 80.0,
+      "attack_speed": 0.3,
+      "dodge_speed": 450.0,
+      "dodge_distance": 250.0
+    },
+    "auto_attack": {
+      "type": "melee_swing",
+      "damage_multiplier": 1.0,
+      "combo_hits": 3,
+      "combo_interval": 0.15,
+      "description": "快速三连斩"
+    },
+    "ultimate": {
+      "id": "sword_sword_rain",
+      "name": "万剑归宗",
+      "description": "全屏剑雨，1000伤害",
+      "damage": 1000,
+      "charge_needed": 100,
+      "effect_type": "circle_aoe",
+      "aoe_radius": 500.0,
+      "duration": 1.5,
+      "color": "#FFD700"
+    }
+  },
+  "talisman": {
+    "id": "talisman",
+    "name": "符修",
+    "title": "符咒通灵",
+    "description": "远程控制，持续伤害。以符入道，掌控天地之力。远距离施法，控制敌人行动，持续造成伤害。",
+    "playstyle": "ranged_control",
+    "tags": ["远程", "控制", "持续伤害", "脆皮"],
+    "color": "#4169E1",
+    "stats": {
+      "max_health": 400,
+      "attack": 250,
+      "defense": 60,
+      "speed": 200.0,
+      "crit_rate": 0.08,
+      "crit_damage": 1.5,
+      "attack_range": 300.0,
+      "attack_speed": 0.7,
+      "dodge_speed": 350.0,
+      "dodge_distance": 180.0
+    },
+    "auto_attack": {
+      "type": "ranged_projectile",
+      "damage_multiplier": 0.8,
+      "projectile_speed": 350.0,
+      "projectile_color": "#4169E1",
+      "description": "发射符咒，速度较慢"
+    },
+    "ultimate": {
+      "id": "talisman_thunder_array",
+      "name": "天雷阵",
+      "description": "全屏持续雷电伤害，200/秒，持续8秒",
+      "damage": 200,
+      "charge_needed": 100,
+      "effect_type": "circle_aoe",
+      "aoe_radius": 500.0,
+      "duration": 8.0,
+      "dot_damage": 200,
+      "color": "#4169E1"
+    }
+  },
+  "pill": {
+    "id": "pill",
+    "name": "丹修",
+    "title": "丹道长生",
+    "description": "辅助生存，持续作战。以丹入道，修炼长生之术。血量高、防御强，拥有治疗和护盾能力。",
+    "playstyle": "tank_sustain",
+    "tags": ["中程", "坦克", "治疗", "持续"],
+    "color": "#32CD32",
+    "stats": {
+      "max_health": 600,
+      "attack": 150,
+      "defense": 100,
+      "speed": 200.0,
+      "crit_rate": 0.05,
+      "crit_damage": 1.3,
+      "attack_range": 180.0,
+      "attack_speed": 0.5,
+      "dodge_speed": 350.0,
+      "dodge_distance": 200.0
+    },
+    "auto_attack": {
+      "type": "medium_throw",
+      "damage_multiplier": 0.9,
+      "projectile_speed": 280.0,
+      "projectile_color": "#32CD32",
+      "description": "投掷丹药，中等距离"
+    },
+    "ultimate": {
+      "id": "pill_revive",
+      "name": "九转还魂",
+      "description": "复活并全回复生命值",
+      "damage": 0,
+      "charge_needed": 100,
+      "effect_type": "self_heal",
+      "heal_amount": 9999,
+      "duration": 0.0,
+      "color": "#32CD32"
+    }
+  }
+}
