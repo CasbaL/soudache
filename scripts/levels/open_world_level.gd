@@ -408,14 +408,20 @@ func _create_extraction_entity(pos: Vector2, zone) -> void:
 	extract.position = pos
 	extract.collision_layer = 8
 	extract.collision_mask = 1
+	extract.z_index = 100  # 确保在地形之上
 	extract.name = "ExtractPoint_%s" % zone.id
 
 	# 视觉：青色大方块
 	var sprite = ColorRect.new()
 	sprite.size = Vector2(60, 60)
 	sprite.position = Vector2(-30, -30)
-	sprite.color = Color(0.2, 0.8, 0.8, 0.8)
+	sprite.color = Color(0.2, 0.8, 0.8, 0.9)
 	extract.add_child(sprite)
+
+	# 闪烁动画（吸引注意）
+	var tween = create_tween().set_loops()
+	tween.tween_property(sprite, "modulate:a", 0.4, 0.8)
+	tween.tween_property(sprite, "modulate:a", 1.0, 0.8)
 
 	# 碰撞区域（大一些方便触发）
 	var collision = CollisionShape2D.new()
