@@ -11,6 +11,10 @@ extends Node2D
 @onready var hud: CanvasLayer = $HUD
 @onready var map_renderer: Node2D = $MapRenderer
 
+# Boss UI
+var _boss_health_bar: CanvasLayer = null
+var _boss_announcement_label: Label = null
+
 # ============================================================
 # 预加载脚本
 # ============================================================
@@ -216,6 +220,9 @@ func _spawn_room_content(room: RoomData) -> void:
 			# 精英死亡后揭示隐藏房间
 			if enemy and enemy.has_signal("died"):
 				enemy.died.connect(_on_enemy_died.bind(room))
+			# Boss信号连接
+			if enemy and enemy is BossEnemy:
+				_connect_boss_signals(enemy)
 
 	# 生成资源
 	for res_config in room.resources:
@@ -302,6 +309,73 @@ func _clear_enemies() -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:
 		enemy.queue_free()
+	_hide_boss_ui()
+
+## 连接Boss信号到UI
+func _connect_boss_signals(boss: BossEnemy) -> void:
+	boss.phase_changed.connect(_on_boss_phase_changed)
+	boss.boss_announcement.connect(_on_boss_announcement)
+	boss.died.connect(_on_boss_died)
+	# 显示Boss血条
+	_show_boss_health_bar(boss)
+
+## 显示Boss血条
+func _show_boss_health_bar(boss: BossEnemy) -> void:
+	if not _boss_health_bar:
+		_boss_health_bar = preload("res://scenes/ui/boss_health_bar.tscn").instantiate()
+		add_child(_boss_health_bar)
+	_boss_health_bar.show_boss(boss.enemy_name, boss.max_health, boss.phases[0].get("name", "阶段1"))
+
+	# 持续更新Boss血量
+	var update_timer = Timer.new()
+	update_timer.wait_time = 0.1
+	update_timer.autostart = true
+	boss.add_child(update_timer)
+	update_timer.timeout.connect(func():
+		if is_instance_valid(boss) and not boss.is_dead:
+			_boss_health_bar.update_health(boss.current_health)
+		else:
+			update_timer.queue_free()
+	)
+
+## 隐藏Boss UI
+func _hide_boss_ui() -> void:
+	if _boss_health_bar:
+		_boss_health_bar.hide_boss()
+
+## Boss阶段变化回调
+func _on_boss_phase_changed(new_phase: int, phase_name: String) -> void:
+	if _boss_health_bar:
+		_boss_health_bar.update_phase(phase_name)
+
+## Boss公告回调 - 显示在屏幕中央
+func _on_boss_announcement(text: String) -> void:
+	if not _boss_announcement_label:
+		_boss_announcement_label = Label.new()
+		_boss_announcement_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_boss_announcement_label.add_theme_font_size_override("font_size", 36)
+		_boss_announcement_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+		_boss_announcement_label.z_index = 200
+		_boss_announcement_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		_boss_announcement_label.offset_top = 150
+		if hud:
+			hud.add_child(_boss_announcement_label)
+		else:
+			add_child(_boss_announcement_label)
+
+	_boss_announcement_label.text = text
+	_boss_announcement_label.visible = true
+	_boss_announcement_label.modulate.a = 1.0
+
+	# 淡入淡出效果
+	var tween = create_tween()
+	tween.tween_interval(0.5)
+	tween.tween_property(_boss_announcement_label, "modulate:a", 0.0, 1.5)
+	tween.tween_callback(func(): _boss_announcement_label.visible = false)
+
+## Boss死亡回调
+func _on_boss_died() -> void:
+	_hide_boss_ui()
 
 ## 获取房间内的随机位置
 func _get_random_room_position() -> Vector2:
