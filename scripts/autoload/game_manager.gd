@@ -99,9 +99,6 @@ func start_new_game() -> void:
 	inventory.clear()
 	
 	game_state_changed.emit(current_state)
-	
-	# 进入门派选择界面
-	get_tree().change_scene_to_file("res://scenes/ui/faction_select.tscn")
 
 ## 暂停游戏
 func pause_game() -> void:

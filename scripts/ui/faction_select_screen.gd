@@ -3,9 +3,9 @@
 extends Control
 
 # 门派卡片引用
-@onready var card_sword: PanelContainer = $VBox/Cards/CardSword
-@onready var card_talisman: PanelContainer = $VBox/Cards/CardTalisman
-@onready var card_pill: PanelContainer = $VBox/Cards/CardPill
+@onready var card_sword: VBoxContainer = $VBox/Cards/CardSword
+@onready var card_talisman: VBoxContainer = $VBox/Cards/CardTalisman
+@onready var card_pill: VBoxContainer = $VBox/Cards/CardPill
 
 # 信息面板
 @onready var info_panel: VBoxContainer = $VBox/InfoPanel
@@ -28,6 +28,8 @@ var selected_faction: String = ""
 var faction_cards: Dictionary = {}
 
 func _ready() -> void:
+	print("[FactionSelect] _ready 开始")
+	
 	# 绑定卡片点击
 	faction_cards = {
 		FactionSystem.SWORD: card_sword,
@@ -44,40 +46,46 @@ func _ready() -> void:
 	
 	# 默认隐藏信息面板
 	info_panel.visible = false
+	
+	print("[FactionSelect] _ready 完成")
 
 ## 初始化单个卡片
-func _setup_card(card: PanelContainer, faction_id: String) -> void:
+func _setup_card(card: VBoxContainer, faction_id: String) -> void:
 	var data = FactionSystem._faction_data_instance.get_faction(faction_id)
 	if data.is_empty():
+		print("[FactionSelect] 门派数据为空: %s" % faction_id)
 		return
 	
 	# 设置名称
-	var name_label = card.get_node("VBox/Name") as Label
+	var name_label = card.get_node("Panel/VBox/Name") as Label
 	name_label.text = data.get("name", "")
 	
 	# 设置标题
-	var title_label = card.get_node("VBox/Title") as Label
+	var title_label = card.get_node("Panel/VBox/Title") as Label
 	title_label.text = data.get("title", "")
 	
 	# 设置颜色标识
-	var color_rect = card.get_node("VBox/ColorBar") as ColorRect
+	var color_rect = card.get_node("Panel/VBox/ColorBar") as ColorRect
 	color_rect.color = FactionSystem._faction_data_instance.get_color(faction_id)
 	
 	# 设置标签
-	var tags_label = card.get_node("VBox/Tags") as Label
+	var tags_label = card.get_node("Panel/VBox/Tags") as Label
 	var tags: Array = data.get("tags", [])
 	tags_label.text = " ".join(tags)
 	
 	# 连接点击事件
 	var button = card.get_node("Button") as Button
 	button.pressed.connect(_on_card_selected.bind(faction_id))
+	print("[FactionSelect] 卡片 %s 设置完成，按钮已连接" % faction_id)
 
 ## 卡片被选中
 func _on_card_selected(faction_id: String) -> void:
+	print("[FactionSelect] 卡片被选中: %s" % faction_id)
 	selected_faction = faction_id
 	_update_info_panel(faction_id)
 	_highlight_card(faction_id)
 	select_button.disabled = false
+	print("[FactionSelect] 确认按钮已启用")
 
 ## 高亮选中的卡片
 func _highlight_card(faction_id: String) -> void:
@@ -118,10 +126,14 @@ func _update_info_panel(faction_id: String) -> void:
 
 ## 确认选择
 func _on_select_pressed() -> void:
+	print("[FactionSelect] 确认选择按钮被点击")
 	if selected_faction == "":
+		print("[FactionSelect] 没有选择门派，返回")
 		return
 	
+	print("[FactionSelect] 选择门派: %s" % selected_faction)
 	FactionSystem.select_faction(selected_faction)
 	
 	# 跳转到游戏场景
+	print("[FactionSelect] 跳转到 test_level.tscn")
 	get_tree().change_scene_to_file("res://scenes/levels/test_level.tscn")

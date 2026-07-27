@@ -44,30 +44,35 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="CardSword" type="PanelContainer" parent="VBox/Cards"]
+[node name="CardSword" type="VBoxContainer" parent="VBox/Cards"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="VBox" type="VBoxContainer" parent="VBox/Cards/CardSword"]
+[node name="Panel" type="PanelContainer" parent="VBox/Cards/CardSword"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="VBox/Cards/CardSword/Panel"]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="ColorBar" type="ColorRect" parent="VBox/Cards/CardSword/VBox"]
+[node name="ColorBar" type="ColorRect" parent="VBox/Cards/CardSword/Panel/VBox"]
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 color = Color(1, 0.84, 0, 1)
 
-[node name="Name" type="Label" parent="VBox/Cards/CardSword/VBox"]
+[node name="Name" type="Label" parent="VBox/Cards/CardSword/Panel/VBox"]
 layout_mode = 2
 text = "剑修"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="VBox/Cards/CardSword/VBox"]
+[node name="Title" type="Label" parent="VBox/Cards/CardSword/Panel/VBox"]
 layout_mode = 2
 text = "剑气凌云"
 horizontal_alignment = 1
 
-[node name="Tags" type="Label" parent="VBox/Cards/CardSword/VBox"]
+[node name="Tags" type="Label" parent="VBox/Cards/CardSword/Panel/VBox"]
 layout_mode = 2
 text = "近战 高爆发"
 horizontal_alignment = 1
@@ -76,30 +81,35 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "选择"
 
-[node name="CardTalisman" type="PanelContainer" parent="VBox/Cards"]
+[node name="CardTalisman" type="VBoxContainer" parent="VBox/Cards"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="VBox" type="VBoxContainer" parent="VBox/Cards/CardTalisman"]
+[node name="Panel" type="PanelContainer" parent="VBox/Cards/CardTalisman"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="VBox/Cards/CardTalisman/Panel"]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="ColorBar" type="ColorRect" parent="VBox/Cards/CardTalisman/VBox"]
+[node name="ColorBar" type="ColorRect" parent="VBox/Cards/CardTalisman/Panel/VBox"]
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 color = Color(0.25, 0.41, 0.88, 1)
 
-[node name="Name" type="Label" parent="VBox/Cards/CardTalisman/VBox"]
+[node name="Name" type="Label" parent="VBox/Cards/CardTalisman/Panel/VBox"]
 layout_mode = 2
 text = "符修"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="VBox/Cards/CardTalisman/VBox"]
+[node name="Title" type="Label" parent="VBox/Cards/CardTalisman/Panel/VBox"]
 layout_mode = 2
 text = "符咒通灵"
 horizontal_alignment = 1
 
-[node name="Tags" type="Label" parent="VBox/Cards/CardTalisman/VBox"]
+[node name="Tags" type="Label" parent="VBox/Cards/CardTalisman/Panel/VBox"]
 layout_mode = 2
 text = "远程 控制"
 horizontal_alignment = 1
@@ -108,30 +118,35 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "选择"
 
-[node name="CardPill" type="PanelContainer" parent="VBox/Cards"]
+[node name="CardPill" type="VBoxContainer" parent="VBox/Cards"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="VBox" type="VBoxContainer" parent="VBox/Cards/CardPill"]
+[node name="Panel" type="PanelContainer" parent="VBox/Cards/CardPill"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="VBox/Cards/CardPill/Panel"]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="ColorBar" type="ColorRect" parent="VBox/Cards/CardPill/VBox"]
+[node name="ColorBar" type="ColorRect" parent="VBox/Cards/CardPill/Panel/VBox"]
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 color = Color(0.2, 0.8, 0.2, 1)
 
-[node name="Name" type="Label" parent="VBox/Cards/CardPill/VBox"]
+[node name="Name" type="Label" parent="VBox/Cards/CardPill/Panel/VBox"]
 layout_mode = 2
 text = "丹修"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="VBox/Cards/CardPill/VBox"]
+[node name="Title" type="Label" parent="VBox/Cards/CardPill/Panel/VBox"]
 layout_mode = 2
 text = "丹道长生"
 horizontal_alignment = 1
 
-[node name="Tags" type="Label" parent="VBox/Cards/CardPill/VBox"]
+[node name="Tags" type="Label" parent="VBox/Cards/CardPill/Panel/VBox"]
 layout_mode = 2
 text = "坦克 治疗"
 horizontal_alignment = 1
