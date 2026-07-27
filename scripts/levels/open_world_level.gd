@@ -431,11 +431,50 @@ func _create_extraction_entity(pos: Vector2, zone) -> void:
 	add_child(extract)
 	_extract_entities.append(extract)
 
+## 撤离确认弹窗
+var _extract_confirm_dialog: ConfirmationDialog = null
+
 ## 撤离点交互
 func _on_extract_entered(body: Node2D, _extract: Node2D, zone) -> void:
 	if body is Player:
 		print("[OpenWorldLevel] 到达撤离点: %s" % zone.id)
-		GameManager.victory()
+		_show_extract_confirm(zone)
+
+## 显示撤离确认弹窗
+func _show_extract_confirm(zone) -> void:
+	# 防止重复弹出
+	if _extract_confirm_dialog and _extract_confirm_dialog.visible:
+		return
+
+	_extract_confirm_dialog = ConfirmationDialog.new()
+	_extract_confirm_dialog.title = "撤离点"
+	_extract_confirm_dialog.dialog_text = "是否立即撤离？\n\n背包物品将保存到仓库。\n继续探索可能获得更好奖励。"
+	_extract_confirm_dialog.ok_button_text = "撤离"
+	_extract_confirm_dialog.cancel_button_text = "继续探索"
+	_extract_confirm_dialog.min_size = Vector2(300, 150)
+
+	_extract_confirm_dialog.confirmed.connect(_on_extract_confirmed)
+	_extract_confirm_dialog.canceled.connect(_on_extract_canceled)
+
+	# 添加到 HUD 层确保在最上层
+	if hud:
+		hud.add_child(_extract_confirm_dialog)
+	else:
+		add_child(_extract_confirm_dialog)
+
+	_extract_confirm_dialog.popup_centered()
+
+	# 暂停游戏
+	get_tree().paused = true
+
+## 确认撤离
+func _on_extract_confirmed() -> void:
+	get_tree().paused = false
+	GameManager.victory()
+
+## 取消撤离
+func _on_extract_canceled() -> void:
+	get_tree().paused = false
 
 # ============================================================
 # 信号回调
