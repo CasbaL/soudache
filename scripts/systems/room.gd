@@ -30,13 +30,13 @@ var grid_pos: Vector2i = Vector2i.ZERO
 var size: Vector2i = Vector2i(1, 1)  # 网格单位，默认1x1
 
 # 连接关系（存储连接到的房间ID）
-var connections: Array[String] = []
+var connections: Array = []
 
 # 敌人配置：Array of { "enemy_id": String, "count": int }
-var enemies: Array[Dictionary] = []
+var enemies: Array = []
 
 # 资源配置：Array of { "resource_id": String, "name": String, "amount": int }
-var resources: Array[Dictionary] = []
+var resources: Array = []
 
 # 模板ID（用于查找详细模板）
 var template_id: String = ""
