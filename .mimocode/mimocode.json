@@ -1,0 +1,9 @@
+{
+  "mcp": {
+    "godot": {
+      "type": "local",
+      "command": ["npx", "@coding-solo/godot-mcp"]
+    }
+  },
+  "$schema": "https://mimo.xiaomi.com/mimocode/config.json"
+}
