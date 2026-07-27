@@ -58,20 +58,14 @@ func _ready() -> void:
 
 ## 创建增强 UI
 func _create_enhanced_ui() -> void:
-	# 标题
-	title_label = Label.new()
-	title_label.text = "装备"
-	title_label.add_theme_font_size_override("font_size", 24)
-	title_label.add_theme_color_override("font_color", COLOR_TITLE)
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	$MainContainer.add_child(title_label)
-
-	# 战斗力
+	# 战斗力（在属性标签下方）
 	combat_power_label = Label.new()
 	combat_power_label.add_theme_font_size_override("font_size", 16)
 	combat_power_label.add_theme_color_override("font_color", COLOR_STAT)
 	combat_power_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	$MainContainer.add_child(combat_power_label)
+	combat_power_label.position = Vector2(0, 360)
+	combat_power_label.size = Vector2(720, 25)
+	add_child(combat_power_label)
 
 	# 套装效果
 	set_bonus_label = Label.new()
@@ -80,7 +74,9 @@ func _create_enhanced_ui() -> void:
 	set_bonus_label.add_theme_color_override("font_color", COLOR_SET_BONUS)
 	set_bonus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	set_bonus_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	$MainContainer.add_child(set_bonus_label)
+	set_bonus_label.position = Vector2(100, 400)
+	set_bonus_label.size = Vector2(520, 40)
+	add_child(set_bonus_label)
 
 	# 强化预览
 	enhance_preview_label = Label.new()
@@ -89,7 +85,9 @@ func _create_enhanced_ui() -> void:
 	enhance_preview_label.add_theme_color_override("font_color", COLOR_ENHANCE)
 	enhance_preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	enhance_preview_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	$MainContainer.add_child(enhance_preview_label)
+	enhance_preview_label.position = Vector2(100, 450)
+	enhance_preview_label.size = Vector2(520, 40)
+	add_child(enhance_preview_label)
 
 ## 更新 UI
 func _update_ui() -> void:
