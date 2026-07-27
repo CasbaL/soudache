@@ -32,6 +32,54 @@
       "baseCritDamage": 0.2,
       "icon": "res://assets/icons/sword_003.png",
       "description": "宝铁锻造的利剑，剑气逼人"
+    },
+    {
+      "id": "bamboo_sword",
+      "name": "竹影剑",
+      "type": "weapon",
+      "rarity": "blue",
+      "set_id": "bamboo_shadow",
+      "baseAttack": 140,
+      "baseCritRate": 0.05,
+      "baseCritDamage": 0.18,
+      "icon": "res://assets/icons/bamboo_sword.png",
+      "description": "竹妖王掉落的灵剑，蕴含竹林之力"
+    },
+    {
+      "id": "flame_sword",
+      "name": "烈焰剑",
+      "type": "weapon",
+      "rarity": "purple",
+      "set_id": "flame_blaze",
+      "baseAttack": 250,
+      "baseCritRate": 0.08,
+      "baseCritDamage": 0.25,
+      "icon": "res://assets/icons/flame_sword.png",
+      "description": "火魔掉落的魔剑，燃烧着不灭之火"
+    },
+    {
+      "id": "tianji_weapon",
+      "name": "天机刃",
+      "type": "weapon",
+      "rarity": "purple",
+      "set_id": "tianji_mechanism",
+      "baseAttack": 220,
+      "baseCritRate": 0.07,
+      "baseCritDamage": 0.22,
+      "icon": "res://assets/icons/tianji_weapon.png",
+      "description": "天机老人打造的机关武器，精妙绝伦"
+    },
+    {
+      "id": "spirit_weapon",
+      "name": "灵韵剑",
+      "type": "weapon",
+      "rarity": "green",
+      "set_id": "spirit_rhythm",
+      "baseAttack": 90,
+      "baseCritRate": 0.04,
+      "baseCritDamage": 0.15,
+      "icon": "res://assets/icons/spirit_weapon.png",
+      "description": "蕴含天地灵韵的宝剑"
     }
   ],
   "armors": [
@@ -64,6 +112,106 @@
       "baseHealth": 250,
       "icon": "res://assets/icons/armor_003.png",
       "description": "宝纹护甲，坚不可摧"
+    },
+    {
+      "id": "bamboo_armor",
+      "name": "竹影甲",
+      "type": "armor",
+      "rarity": "blue",
+      "set_id": "bamboo_shadow",
+      "baseDefense": 75,
+      "baseHealth": 220,
+      "icon": "res://assets/icons/bamboo_armor.png",
+      "description": "竹妖王掉落的护甲，轻盈坚韧"
+    },
+    {
+      "id": "flame_armor",
+      "name": "烈焰甲",
+      "type": "armor",
+      "rarity": "purple",
+      "set_id": "flame_blaze",
+      "baseDefense": 150,
+      "baseHealth": 450,
+      "icon": "res://assets/icons/flame_armor.png",
+      "description": "火魔掉落的魔甲，火焰不侵"
+    },
+    {
+      "id": "tianji_armor",
+      "name": "天机甲",
+      "type": "armor",
+      "rarity": "purple",
+      "set_id": "tianji_mechanism",
+      "baseDefense": 140,
+      "baseHealth": 400,
+      "icon": "res://assets/icons/tianji_armor.png",
+      "description": "天机阁的机关护甲，防御力极强"
+    },
+    {
+      "id": "spirit_armor",
+      "name": "灵韵甲",
+      "type": "armor",
+      "rarity": "green",
+      "set_id": "spirit_rhythm",
+      "baseDefense": 50,
+      "baseHealth": 140,
+      "icon": "res://assets/icons/spirit_armor.png",
+      "description": "灵韵护甲，蕴含天地灵气"
+    }
+  ],
+  "helmets": [
+    {
+      "id": "helmet_001",
+      "name": "布帽",
+      "type": "helmet",
+      "rarity": "white",
+      "baseDefense": 10,
+      "baseHealth": 30,
+      "icon": "res://assets/icons/helmet_001.png",
+      "description": "普通的布帽"
+    },
+    {
+      "id": "bamboo_helmet",
+      "name": "竹影冠",
+      "type": "helmet",
+      "rarity": "blue",
+      "set_id": "bamboo_shadow",
+      "baseDefense": 40,
+      "baseHealth": 150,
+      "icon": "res://assets/icons/bamboo_helmet.png",
+      "description": "竹妖王掉落的头冠，清心明目"
+    },
+    {
+      "id": "flame_helmet",
+      "name": "烈焰冠",
+      "type": "helmet",
+      "rarity": "purple",
+      "set_id": "flame_blaze",
+      "baseDefense": 80,
+      "baseHealth": 300,
+      "icon": "res://assets/icons/flame_helmet.png",
+      "description": "火魔掉落的魔冠，烈焰护体"
+    },
+    {
+      "id": "tianji_helmet",
+      "name": "天机冠",
+      "type": "helmet",
+      "rarity": "purple",
+      "set_id": "tianji_mechanism",
+      "baseDefense": 75,
+      "baseHealth": 280,
+      "icon": "res://assets/icons/tianji_helmet.png",
+      "description": "天机阁的机关头冠，洞察先机"
+    },
+    {
+      "id": "spirit_helmet",
+      "name": "灵韵冠",
+      "type": "helmet",
+      "rarity": "green",
+      "set_id": "spirit_rhythm",
+      "baseDefense": 25,
+      "baseHealth": 100,
+      "icon": "res://assets/icons/spirit_helmet.png",
+      "description": "灵韵头冠，灵气充盈"
     }
   ],
   "accessories": [

@@ -20,6 +20,7 @@ var id: String = ""
 var name: String = ""
 var type: String = ""          # weapon / armor / helmet / accessory
 var rarity: Rarity = Rarity.WHITE
+var set_id: String = ""        # 套装ID，空表示非套装
 var enhance_level: int = 0
 var base_stats: Dictionary = {}  # attack, defense, health, crit_rate, crit_damage, dodge_rate
 var effects: Array = []          # [{type, name, value}]
@@ -31,6 +32,7 @@ func _init(data: Dictionary = {}) -> void:
 	name = data.get("name", "")
 	type = data.get("type", "weapon")
 	rarity = _str_to_rarity(data.get("rarity", "white"))
+	set_id = data.get("set_id", "")
 	enhance_level = data.get("enhance_level", 0)
 	# Accept both flat keys (attack, defense) and nested baseStats
 	base_stats = {}
@@ -88,6 +90,7 @@ func to_dict() -> Dictionary:
 		"name": name,
 		"type": type,
 		"rarity": _rarity_to_str(rarity),
+		"set_id": set_id,
 		"enhance_level": enhance_level,
 		"base_stats": base_stats.duplicate(),
 		"effects": effects.duplicate(true),
@@ -101,3 +104,14 @@ static func _rarity_to_str(r: Rarity) -> String:
 		Rarity.PURPLE: return "purple"
 		Rarity.GOLD: return "gold"
 		_: return "white"
+
+## 检查是否是套装装备
+func is_set_piece() -> bool:
+	return set_id != ""
+
+## 获取套装名称
+func get_set_name() -> String:
+	if set_id == "":
+		return ""
+	var SetBonusData = preload("res://scripts/systems/set_bonus_data.gd")
+	return SetBonusData.get_set_name(set_id)
