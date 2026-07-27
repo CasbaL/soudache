@@ -255,16 +255,31 @@ func die() -> void:
 ## 掉落物品
 func drop_loot() -> void:
 	var items: Array[Dictionary] = []
-	
+
 	for drop in drop_items:
-		if randf() <= drop.chance:
-			var amount = randi_range(drop.amount[0], drop.amount[1])
+		if randf() <= drop.get("chance", 1.0):
+			var amount = randi_range(drop.get("amount", [1, 1])[0], drop.get("amount", [1, 1])[1])
+			var rarity = drop.get("rarity", "white")
+			var item_id = drop.get("id", "")
+			var item_name = drop.get("name", "")
+
+			# 创建掉落物实体
+			DropItem.create_drop(
+				get_tree().current_scene,
+				global_position,
+				item_id,
+				item_name,
+				amount,
+				rarity
+			)
+
 			items.append({
-				"id": drop.id,
-				"name": drop.name,
-				"amount": amount
+				"id": item_id,
+				"name": item_name,
+				"amount": amount,
+				"rarity": rarity,
 			})
-	
+
 	if items.size() > 0:
 		dropped_items.emit(items)
 
