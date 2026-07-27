@@ -40,6 +40,7 @@ NPCInteractionSystem="*res://scripts/systems/npc_interaction_system.gd"
 CombatFeedback="*res://scripts/systems/combat_feedback.gd"
 SceneTransition="*res://scripts/autoload/scene_transition.gd"
 FogSystem="*res://scripts/systems/fog_system.gd"
+AchievementSystem="*res://scripts/systems/achievement_system.gd"
 
 [display]
 
