@@ -118,6 +118,8 @@ func resume_game() -> void:
 
 ## 游戏结束
 func game_over() -> void:
+	if current_state == GameState.GAME_OVER or current_state == GameState.VICTORY:
+		return  # 防止重复触发
 	current_state = GameState.GAME_OVER
 	game_state_changed.emit(current_state)
 	# 延迟后返回洞府
@@ -136,13 +138,44 @@ func _handle_death() -> void:
 
 ## 胜利（成功撤离）
 func victory() -> void:
+	if current_state == GameState.VICTORY or current_state == GameState.GAME_OVER:
+		return  # 防止重复触发
 	current_state = GameState.VICTORY
 	game_state_changed.emit(current_state)
+
+	# 根据层数给予撤离奖励
+	_give_extraction_rewards()
+
 	# 保存物资到仓库
 	save_inventory_to_storage()
 	print("成功撤离！物资已保存")
 	# 延迟后返回洞府
 	_handle_extraction()
+
+## 根据层数给予撤离奖励
+func _give_extraction_rewards() -> void:
+	var bonus_stone = 0
+	var bonus_herb = 0
+	var bonus_ore = 0
+	match current_layer:
+		1:
+			bonus_stone = randi_range(50, 100)
+			bonus_herb = randi_range(5, 10)
+			bonus_ore = randi_range(5, 10)
+		2:
+			bonus_stone = randi_range(150, 300)
+			bonus_herb = randi_range(15, 30)
+			bonus_ore = randi_range(15, 30)
+		3:
+			bonus_stone = randi_range(400, 800)
+			bonus_herb = randi_range(40, 80)
+			bonus_ore = randi_range(40, 80)
+
+	storage["spirit_stone"] = storage.get("spirit_stone", 0) + bonus_stone
+	storage["herb"] = storage.get("herb", 0) + bonus_herb
+	storage["ore"] = storage.get("ore", 0) + bonus_ore
+	storage_changed.emit()
+	print("撤离奖励: 灵石+%d, 灵草+%d, 矿石+%d" % [bonus_stone, bonus_herb, bonus_ore])
 
 ## 处理撤离：延迟后返回洞府
 func _handle_extraction() -> void:
