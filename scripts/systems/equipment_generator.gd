@@ -36,7 +36,7 @@ const ACCESSORY_RANGES = {
 	4: {"health": [420, 630]},
 }
 
-# 效果池
+# 被动效果池
 const PASSIVE_EFFECTS = [
 	{"name": "攻击强化", "type": "passive", "stat": "attack_pct",  "range": [0.05, 0.25]},
 	{"name": "防御强化", "type": "passive", "stat": "defense_pct", "range": [0.05, 0.25]},
@@ -48,8 +48,23 @@ const PASSIVE_EFFECTS = [
 	{"name": "冷却缩减", "type": "passive", "stat": "cdr_pct",     "range": [0.05, 0.15]},
 ]
 
-# 每个稀有度最多效果数
-const MAX_EFFECTS = [0, 1, 2, 2, 3]
+# 触发效果池
+const TRIGGER_EFFECTS = [
+	{"name": "嗜血", "type": "trigger", "trigger": "on_crit", "effect": "heal_percent", "value": 0.05, "cooldown": 10, "description": "暴击时回复5%生命值"},
+	{"name": "坚韧", "type": "trigger", "trigger": "on_low_hp", "threshold": 0.30, "effect": "defense_buff", "value": 0.30, "duration": 30, "description": "生命低于30%时防御+30%"},
+	{"name": "狂暴", "type": "trigger", "trigger": "on_low_hp", "threshold": 0.30, "effect": "attack_buff", "value": 0.30, "duration": 30, "description": "生命低于30%时攻击+30%"},
+	{"name": "连击", "type": "trigger", "trigger": "on_attack", "effect": "double_attack", "chance": 0.15, "description": "15%概率触发二次攻击"},
+	{"name": "反击", "type": "trigger", "trigger": "on_hit", "effect": "counter_attack", "chance": 0.20, "damage_percent": 0.50, "cooldown": 5, "description": "20%概率反击，造成50%攻击伤害"},
+	{"name": "吸血", "type": "trigger", "trigger": "on_attack", "effect": "lifesteal", "value": 0.03, "description": "回复3%造成伤害"},
+	{"name": "破甲", "type": "trigger", "trigger": "on_attack", "effect": "armor_break", "chance": 0.10, "value": 0.20, "duration": 5, "description": "10%概率降低目标防御20%"},
+	{"name": "致盲", "type": "trigger", "trigger": "on_attack", "effect": "blind", "chance": 0.08, "value": 0.20, "duration": 5, "description": "8%概率降低目标攻击20%"},
+	{"name": "冰冻", "type": "trigger", "trigger": "on_attack", "effect": "freeze", "chance": 0.05, "duration": 1, "cooldown": 15, "description": "5%概率冻结目标1秒"},
+	{"name": "灼烧", "type": "trigger", "trigger": "on_attack", "effect": "burn", "chance": 0.12, "damage_percent": 0.20, "duration": 3, "description": "12%概率灼烧目标，每秒造成20%攻击伤害"},
+]
+
+# 每个稀有度最多效果数（被动+触发）
+const MAX_PASSIVE_EFFECTS = [0, 1, 1, 2, 2]
+const MAX_TRIGGER_EFFECTS = [0, 0, 1, 1, 2]
 
 # 武器名称模板
 const WEAPON_NAMES = ["青钢剑", "灵铁剑", "宝铁剑", "仙铁剑", "神铁剑"]
@@ -105,17 +120,27 @@ static func generate_equipment(rarity_index: int = 0, type_override: String = ""
 		else:
 			base_stats[stat_key] = randi_range(int(min_val), int(max_val))
 
-	# 随机效果
+	# 随机被动效果
 	var effects: Array = []
-	var max_fx: int = MAX_EFFECTS[rarity_index]
-	if max_fx > 0:
+	var max_passive: int = MAX_PASSIVE_EFFECTS[rarity_index]
+	if max_passive > 0:
 		var pool = PASSIVE_EFFECTS.duplicate()
 		pool.shuffle()
-		var count = randi_range(1, max_fx)
+		var count = randi_range(1, max_passive)
 		for i in range(min(count, pool.size())):
 			var fx = pool[i].duplicate()
 			fx["value"] = snappedf(randf_range(fx["range"][0], fx["range"][1]), 0.01)
 			fx.erase("range")
+			effects.append(fx)
+
+	# 随机触发效果
+	var max_trigger: int = MAX_TRIGGER_EFFECTS[rarity_index]
+	if max_trigger > 0:
+		var trigger_pool = TRIGGER_EFFECTS.duplicate()
+		trigger_pool.shuffle()
+		var trigger_count = randi_range(1, max_trigger)
+		for i in range(min(trigger_count, trigger_pool.size())):
+			var fx = trigger_pool[i].duplicate()
 			effects.append(fx)
 
 	# 构建数据
