@@ -45,18 +45,21 @@ func save_game() -> bool:
 		}
 	}
 	
+	# 添加校验和
+	save_data["checksum"] = _calculate_checksum(save_data)
+
 	# 保存到文件
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
 		print("保存失败：无法打开文件")
 		return false
-	
+
 	file.store_var(save_data)
 	file.close()
-	
+
 	# 创建备份
 	_create_backup()
-	
+
 	print("游戏已保存")
 	return true
 
@@ -78,10 +81,15 @@ func load_game() -> bool:
 	if not save_data.has("version") or save_data.version != SAVE_VERSION:
 		print("存档版本不匹配，尝试迁移...")
 		return _migrate_save(save_data)
-	
+
+	# 验证完整性
+	if not _validate_save(save_data):
+		print("存档校验失败，尝试加载备份...")
+		return _load_backup()
+
 	# 恢复游戏状态
 	_restore_game_state()
-	
+
 	print("游戏已加载")
 	return true
 
@@ -126,6 +134,23 @@ func _create_backup() -> void:
 		if dir:
 			dir.copy(SAVE_PATH, BACKUP_PATH)
 
+## 加载备份存档
+func _load_backup() -> bool:
+	if not FileAccess.file_exists(BACKUP_PATH):
+		print("没有备份存档")
+		return false
+	var file = FileAccess.open(BACKUP_PATH, FileAccess.READ)
+	if file == null:
+		return false
+	save_data = file.get_var()
+	file.close()
+	if _validate_save(save_data):
+		_restore_game_state()
+		print("从备份加载成功")
+		return true
+	print("备份也已损坏")
+	return false
+
 ## 迁移存档
 func _migrate_save(old_data: Dictionary) -> bool:
 	# 简单迁移：保留能识别的数据
@@ -133,6 +158,25 @@ func _migrate_save(old_data: Dictionary) -> bool:
 	save_data = old_data
 	save_data.version = SAVE_VERSION
 	_restore_game_state()
+	return true
+
+## 计算校验和
+func _calculate_checksum(data: Dictionary) -> String:
+	# 简单的哈希校验（排除 checksum 字段本身）
+	var copy = data.duplicate(true)
+	copy.erase("checksum")
+	var json_str = JSON.stringify(copy)
+	return json_str.sha256_text()
+
+## 验证存档完整性
+func _validate_save(data: Dictionary) -> bool:
+	if not data.has("checksum"):
+		return true  # 旧存档无校验，允许加载
+	var stored_checksum = data.get("checksum", "")
+	var calculated = _calculate_checksum(data)
+	if stored_checksum != calculated:
+		push_warning("存档校验和不匹配，数据可能被篡改")
+		return false
 	return true
 
 ## 删除存档
