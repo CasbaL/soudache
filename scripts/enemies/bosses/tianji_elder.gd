@@ -96,10 +96,14 @@ func _attack_mechanism_arrow() -> void:
 	
 	print("%s: 机关箭5连射！" % enemy_name)
 
-## 符文陷阱 - 定身效果
+## 符文陷阱 - 定身效果（带预警）
 func _attack_rune_trap() -> void:
 	var target_pos = target.global_position if target else global_position + Vector2.RIGHT * 100
-	
+	# 预警：黄色控制
+	WarningIndicator.create_circle(get_tree().current_scene, target_pos, 70.0, 0.5, 0, "control")
+
+	await get_tree().create_timer(0.5).timeout
+
 	var effect_script = preload("res://scripts/systems/skill_effect.gd")
 	var effect = Area2D.new()
 	effect.set_script(effect_script)
@@ -110,12 +114,12 @@ func _attack_rune_trap() -> void:
 	effect.color = Color(0.5, 0.3, 0.8, 0.4)
 	effect.lifetime = 1.5
 	get_tree().current_scene.add_child(effect)
-	
+
 	# 对区域内玩家施加定身
 	for body in effect.get_overlapping_bodies():
 		if body is Player:
 			SkillSystem.apply_stun(body, 2.0)
-	
+
 	print("%s: 符文陷阱！" % enemy_name)
 
 ## 召唤傀儡
@@ -164,8 +168,13 @@ func _attack_rune_teleport() -> void:
 	
 	print("%s: 符文传送！" % enemy_name)
 
-## 符文爆发 - 圆形AOE
+## 符文爆发 - 圆形AOE（带预警）
 func _attack_rune_burst() -> void:
+	# 预警：圆形
+	WarningIndicator.create_circle(get_tree().current_scene, global_position, 180.0, 0.4, 0, "instant")
+
+	await get_tree().create_timer(0.4).timeout
+
 	var effect_script = preload("res://scripts/systems/skill_effect.gd")
 	var effect = Area2D.new()
 	effect.set_script(effect_script)
@@ -176,18 +185,22 @@ func _attack_rune_burst() -> void:
 	effect.color = Color(0.6, 0.3, 0.9, 0.4)
 	effect.lifetime = 0.8
 	get_tree().current_scene.add_child(effect)
-	
+
 	print("%s: 符文爆发！" % enemy_name)
 
-## 天机阵 - 全屏攻击
+## 天机阵 - 全屏攻击（带预警）
 func _attack_tianji_array() -> void:
 	boss_announcement.emit("天机阵！")
-	
+	# 预警：大范围圆形
+	WarningIndicator.create_circle(get_tree().current_scene, global_position, 450.0, 0.8, 0, "area")
+
+	await get_tree().create_timer(0.8).timeout
+
 	# 全屏伤害
 	var player = get_tree().get_first_node_in_group("player")
 	if player and player.has_method("take_damage"):
 		player.take_damage(array_damage)
-	
+
 	# 大范围视觉效果
 	var effect_script = preload("res://scripts/systems/skill_effect.gd")
 	var effect = Area2D.new()
@@ -199,13 +212,13 @@ func _attack_tianji_array() -> void:
 	effect.color = Color(0.3, 0.2, 0.7, 0.2)
 	effect.lifetime = 2.0
 	get_tree().current_scene.add_child(effect)
-	
+
 	# 多段伤害
 	for i in 3:
 		await get_tree().create_timer(0.5).timeout
 		if player and player.has_method("take_damage"):
 			player.take_damage(array_damage / 3)
-	
+
 	print("%s: 天机阵！" % enemy_name)
 
 ## 傀儡合体 - 召唤巨型傀儡

@@ -105,9 +105,14 @@ func _attack_fire_ball() -> void:
 	
 	print("%s: 火球三连射！" % enemy_name)
 
-## 火焰吐息 - 锥形AOE
+## 火焰吐息 - 锥形AOE（带预警）
 func _attack_fire_breath() -> void:
 	var dir = _get_direction_to_target()
+	# 预警：直线
+	WarningIndicator.create_line(get_tree().current_scene, global_position + dir * 80, dir, 200.0, 80.0, 0.4, 0, "line")
+
+	await get_tree().create_timer(0.4).timeout
+
 	var effect_script = preload("res://scripts/systems/skill_effect.gd")
 	var effect = Area2D.new()
 	effect.set_script(effect_script)
@@ -120,13 +125,17 @@ func _attack_fire_breath() -> void:
 	effect.rotation = dir.angle()
 	effect.lifetime = 0.6
 	get_tree().current_scene.add_child(effect)
-	
+
 	print("%s: 火焰吐息！" % enemy_name)
 
-## 岩浆地面 - 圆形DOT区域
+## 岩浆地面 - 圆形DOT区域（带预警）
 func _attack_magma_ground() -> void:
 	var target_pos = target.global_position if target else global_position + Vector2.RIGHT * 100
-	
+	# 预警：紫色持续区域
+	WarningIndicator.create_circle(get_tree().current_scene, target_pos, 100.0, 0.5, 0, "area")
+
+	await get_tree().create_timer(0.5).timeout
+
 	var effect_script = preload("res://scripts/systems/skill_effect.gd")
 	var effect = Area2D.new()
 	effect.set_script(effect_script)
@@ -137,12 +146,12 @@ func _attack_magma_ground() -> void:
 	effect.color = Color(1.0, 0.3, 0.0, 0.4)
 	effect.lifetime = 3.0
 	get_tree().current_scene.add_child(effect)
-	
+
 	# 对区域内玩家施加DOT
 	for body in effect.get_overlapping_bodies():
 		if body is Player:
 			SkillSystem.apply_dot(body, magma_dot_damage, magma_dot_duration)
-	
+
 	print("%s: 岩浆地面！" % enemy_name)
 
 ## 火焰领域 - 持续光环伤害
@@ -204,17 +213,19 @@ func _attack_fire_charge() -> void:
 	
 	print("%s: 火焰冲锋！" % enemy_name)
 
-## 陨石雨（阶段3大招）
+## 陨石雨（阶段3大招，带预警）
 func _attack_fire_meteor() -> void:
 	boss_announcement.emit("陨石雨降临！")
-	
+
 	for i in meteor_count:
 		var offset = Vector2(randf_range(-300, 300), randf_range(-300, 300))
 		var meteor_pos = global_position + offset
-		
-		# 延迟降落
+
+		# 预警：圆形
+		WarningIndicator.create_circle(get_tree().current_scene, meteor_pos, 70.0, 0.3, 0, "instant")
+
 		await get_tree().create_timer(0.2).timeout
-		
+
 		var effect_script = preload("res://scripts/systems/skill_effect.gd")
 		var effect = Area2D.new()
 		effect.set_script(effect_script)
@@ -225,7 +236,7 @@ func _attack_fire_meteor() -> void:
 		effect.color = Color(1.0, 0.3, 0.0, 0.5)
 		effect.lifetime = 0.8
 		get_tree().current_scene.add_child(effect)
-	
+
 	print("%s: 陨石雨！" % enemy_name)
 
 ## 火焰爆炸（阶段3大招）+ 易伤窗口

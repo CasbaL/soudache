@@ -74,17 +74,21 @@ func _on_phase_enter(phase: int) -> void:
 			attack_cooldown = 0.4
 			speed = 90.0
 
-## 竹叶扫射 - 扇形AOE
+## 竹叶扫射 - 扇形AOE（带预警）
 func _attack_leaf_sweep() -> void:
 	var base_dir = _get_direction_to_target()
+	# 预警：扇形
+	WarningIndicator.create_fan(get_tree().current_scene, global_position, base_dir, 60.0, 200.0, 0.5, 0, "fan")
+
+	await get_tree().create_timer(0.5).timeout
+
 	var leaf_count = 5
 	var spread_angle = deg_to_rad(60)
-	
 	for i in leaf_count:
 		var angle = base_dir.angle() - spread_angle / 2 + (spread_angle / (leaf_count - 1)) * i
 		var dir = Vector2.from_angle(angle)
 		_spawn_leaf_projectile(dir)
-	
+
 	print("%s: 竹叶扫射！" % enemy_name)
 
 ## 毒息 - 直线DOT
@@ -110,10 +114,14 @@ func _attack_poison_breath() -> void:
 	
 	print("%s: 毒息！" % enemy_name)
 
-## 竹刺 - 圆形AOE
+## 竹刺 - 圆形AOE（带预警）
 func _attack_bamboo_spike() -> void:
 	var target_pos = target.global_position if target else global_position + Vector2.RIGHT * 100
-	
+	# 预警：圆形
+	WarningIndicator.create_circle(get_tree().current_scene, target_pos, 80.0, 0.4, 0, "instant")
+
+	await get_tree().create_timer(0.4).timeout
+
 	var effect_script = preload("res://scripts/systems/skill_effect.gd")
 	var effect = Area2D.new()
 	effect.set_script(effect_script)
@@ -124,7 +132,7 @@ func _attack_bamboo_spike() -> void:
 	effect.color = Color(0.3, 0.7, 0.3, 0.4)
 	effect.lifetime = 0.6
 	get_tree().current_scene.add_child(effect)
-	
+
 	print("%s: 竹刺！" % enemy_name)
 
 ## 召唤分身
@@ -133,24 +141,32 @@ func _attack_bamboo_clone() -> void:
 	boss_announcement.emit("分身现！")
 	print("%s: 召唤竹妖分身！" % enemy_name)
 
-## 根须陷阱 - 随机位置圆形AOE
+## 根须陷阱 - 随机位置圆形AOE（带预警）
 func _attack_root_trap() -> void:
 	var trap_count = 3
+	var trap_positions: Array[Vector2] = []
 	for i in trap_count:
 		var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
-		var trap_pos = global_position + offset
-		
+		trap_positions.append(global_position + offset)
+
+	# 预警：多个圆形
+	for pos in trap_positions:
+		WarningIndicator.create_circle(get_tree().current_scene, pos, 60.0, 0.6, 0, "control")
+
+	await get_tree().create_timer(0.6).timeout
+
+	for pos in trap_positions:
 		var effect_script = preload("res://scripts/systems/skill_effect.gd")
 		var effect = Area2D.new()
 		effect.set_script(effect_script)
-		effect.position = trap_pos
+		effect.position = pos
 		effect.effect_type = "circle"
 		effect.radius = 60.0
 		effect.damage = attack_damage / 2
 		effect.color = Color(0.4, 0.2, 0.0, 0.4)
 		effect.lifetime = 1.0
 		get_tree().current_scene.add_child(effect)
-	
+
 	print("%s: 根须陷阱！" % enemy_name)
 
 ## 全场竹风暴（阶段3大招） + 易伤窗口
