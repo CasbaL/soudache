@@ -50,6 +50,13 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
 
+[performance]
+
+# 帧率限制（移动端优化）
+limits/fps/force_fps=60
+# 渲染优化
+rendering/textures/canvas_textures/default_texture_filter=0
+
 [input]
 
 move_up={
