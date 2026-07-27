@@ -1,0 +1,340 @@
+{
+  "layer1": {
+    "name": "幽竹林",
+    "COMBAT": [
+      {
+        "id": "combat_bamboo_ambush",
+        "name": "竹林伏击",
+        "difficulty": 1,
+        "enemies": [{"enemy_id": "bamboo_spirit", "count_min": 2, "count_max": 4}],
+        "resources": [{"resource_id": "herb", "name": "灵草", "amount_min": 1, "amount_max": 3}],
+        "hazards": [],
+        "layout": "circular"
+      },
+      {
+        "id": "combat_bamboo_archer",
+        "name": "竹林射手",
+        "difficulty": 2,
+        "enemies": [{"enemy_id": "bamboo_spirit", "count_min": 2, "count_max": 3}, {"enemy_id": "bamboo_archer", "count_min": 1, "count_max": 2}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 20, "amount_max": 40}],
+        "hazards": [],
+        "layout": "rectangular"
+      },
+      {
+        "id": "combat_bamboo_elite_guard",
+        "name": "竹妖哨站",
+        "difficulty": 3,
+        "enemies": [{"enemy_id": "bamboo_spirit", "count_min": 3, "count_max": 5}],
+        "resources": [{"resource_id": "herb", "name": "灵草", "amount_min": 3, "amount_max": 5}],
+        "hazards": [],
+        "layout": "circular"
+      },
+      {
+        "id": "combat_bamboo_trap",
+        "name": "竹林陷阱",
+        "difficulty": 2,
+        "enemies": [{"enemy_id": "bamboo_spirit", "count_min": 1, "count_max": 2}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 30, "amount_max": 60}],
+        "hazards": [{"type": "spike_trap", "damage": 50}],
+        "layout": "rectangular"
+      }
+    ],
+    "RESOURCE": [
+      {
+        "id": "resource_herb_grove",
+        "name": "灵草丛",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "herb", "name": "灵草", "amount_min": 5, "amount_max": 8}],
+        "hazards": []
+      },
+      {
+        "id": "resource_ore_vein",
+        "name": "矿脉",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 3, "amount_max": 5}],
+        "hazards": []
+      },
+      {
+        "id": "resource_spirit_spring",
+        "name": "灵泉",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 80, "amount_max": 120}],
+        "hazards": []
+      }
+    ],
+    "EVENT": [
+      {
+        "id": "event_merchant",
+        "name": "老道商人",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [],
+        "hazards": [],
+        "has_npc": true,
+        "npc_type": "merchant",
+        "npc_dialogue": "小子，要买点什么？老道这里货真价实。"
+      },
+      {
+        "id": "event_trapped_cultivator",
+        "name": "被困修士",
+        "difficulty": 1,
+        "enemies": [{"enemy_id": "bamboo_spirit", "count_min": 2, "count_max": 3}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 100, "amount_max": 200}],
+        "hazards": [],
+        "has_npc": true,
+        "npc_type": "trapped_cultivator",
+        "npc_dialogue": "道友救我！我被竹妖困在这里三天了！"
+      }
+    ],
+    "ELITE": [
+      {
+        "id": "elite_bamboo_nest",
+        "name": "竹妖巢穴",
+        "difficulty": 4,
+        "enemies": [{"enemy_id": "bamboo_elite", "count_min": 1, "count_max": 1}, {"enemy_id": "bamboo_spirit", "count_min": 3, "count_max": 5}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 150, "amount_max": 250}],
+        "hazards": []
+      },
+      {
+        "id": "elite_bamboo_throne",
+        "name": "竹妖王座",
+        "difficulty": 5,
+        "enemies": [{"enemy_id": "bamboo_elite", "count_min": 2, "count_max": 2}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 200, "amount_max": 400}],
+        "hazards": []
+      }
+    ],
+    "SECRET": [
+      {
+        "id": "secret_bamboo_treasure",
+        "name": "竹妖宝藏",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 300, "amount_max": 500}],
+        "hazards": []
+      }
+    ]
+  },
+  "layer2": {
+    "name": "火焰山",
+    "COMBAT": [
+      {
+        "id": "combat_fire_zone",
+        "name": "熔岩地带",
+        "difficulty": 2,
+        "enemies": [{"enemy_id": "fire_spirit", "count_min": 2, "count_max": 4}],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 3, "amount_max": 5}],
+        "hazards": [{"type": "lava", "damage": 30}]
+      },
+      {
+        "id": "combat_fire_maze",
+        "name": "火焰迷宫",
+        "difficulty": 3,
+        "enemies": [{"enemy_id": "fire_spirit", "count_min": 3, "count_max": 5}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 50, "amount_max": 100}],
+        "hazards": [{"type": "fire_wall", "damage": 40}]
+      },
+      {
+        "id": "combat_fire_arena",
+        "name": "火焰竞技场",
+        "difficulty": 3,
+        "enemies": [{"enemy_id": "fire_spirit", "count_min": 5, "count_max": 8}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 100, "amount_max": 200}],
+        "hazards": []
+      },
+      {
+        "id": "combat_fire_trap",
+        "name": "火焰陷阱",
+        "difficulty": 2,
+        "enemies": [{"enemy_id": "fire_spirit", "count_min": 1, "count_max": 3}],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 5, "amount_max": 8}],
+        "hazards": [{"type": "eruption", "damage": 60}]
+      }
+    ],
+    "RESOURCE": [
+      {
+        "id": "resource_fire_crystal",
+        "name": "火晶石矿",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 8, "amount_max": 12}],
+        "hazards": []
+      },
+      {
+        "id": "resource_fire_spring",
+        "name": "火焰灵泉",
+        "difficulty": 1,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 150, "amount_max": 250}],
+        "hazards": [{"type": "lava", "damage": 20}]
+      }
+    ],
+    "EVENT": [
+      {
+        "id": "event_fire_merchant",
+        "name": "火焰商人",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [],
+        "hazards": [],
+        "has_npc": true,
+        "npc_type": "merchant",
+        "npc_dialogue": "道友，在这火焰山能活下来，你有点本事。"
+      }
+    ],
+    "ELITE": [
+      {
+        "id": "elite_fire_nest",
+        "name": "火焰巢穴",
+        "difficulty": 4,
+        "enemies": [{"enemy_id": "fire_giant", "count_min": 1, "count_max": 1}, {"enemy_id": "fire_spirit", "count_min": 3, "count_max": 5}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 300, "amount_max": 500}],
+        "hazards": []
+      }
+    ],
+    "SECRET": [
+      {
+        "id": "secret_fire_treasure",
+        "name": "火焰宝藏",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 500, "amount_max": 1000}],
+        "hazards": []
+      }
+    ]
+  },
+  "layer3": {
+    "name": "天机阁",
+    "COMBAT": [
+      {
+        "id": "combat_mechanism_corridor",
+        "name": "机关通道",
+        "difficulty": 3,
+        "enemies": [{"enemy_id": "mechanism_beast", "count_min": 2, "count_max": 4}],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 5, "amount_max": 8}],
+        "hazards": [{"type": "arrow_trap", "damage": 40}]
+      },
+      {
+        "id": "combat_mechanism_gear",
+        "name": "齿轮房间",
+        "difficulty": 4,
+        "enemies": [{"enemy_id": "mechanism_beast", "count_min": 3, "count_max": 5}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 100, "amount_max": 200}],
+        "hazards": [{"type": "gear_trap", "damage": 50}]
+      },
+      {
+        "id": "combat_mechanism_rune",
+        "name": "符文阵",
+        "difficulty": 3,
+        "enemies": [{"enemy_id": "mechanism_beast", "count_min": 4, "count_max": 6}],
+        "resources": [],
+        "hazards": [{"type": "rune_trap", "damage": 30, "effect": "stun"}]
+      },
+      {
+        "id": "combat_mechanism_maze",
+        "name": "机关迷宫",
+        "difficulty": 4,
+        "enemies": [{"enemy_id": "mechanism_beast", "count_min": 4, "count_max": 6}],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 8, "amount_max": 15}],
+        "hazards": [{"type": "moving_wall", "damage": 35}]
+      },
+      {
+        "id": "combat_mechanism_arena",
+        "name": "机关竞技场",
+        "difficulty": 5,
+        "enemies": [{"enemy_id": "mechanism_beast", "count_min": 6, "count_max": 10}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 300, "amount_max": 600}],
+        "hazards": []
+      }
+    ],
+    "RESOURCE": [
+      {
+        "id": "resource_gear_workshop",
+        "name": "齿轮工坊",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "ore", "name": "矿石", "amount_min": 10, "amount_max": 15}],
+        "hazards": []
+      },
+      {
+        "id": "resource_rune_library",
+        "name": "符文书房",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 200, "amount_max": 400}],
+        "hazards": []
+      },
+      {
+        "id": "resource_mechanism_spring",
+        "name": "机关灵泉",
+        "difficulty": 1,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 400, "amount_max": 600}],
+        "hazards": [{"type": "gear_trap", "damage": 25}]
+      }
+    ],
+    "EVENT": [
+      {
+        "id": "event_mechanism_merchant",
+        "name": "机关商人",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [],
+        "hazards": [],
+        "has_npc": true,
+        "npc_type": "merchant",
+        "npc_dialogue": "道友，这天机阁的机关可不好对付。"
+      },
+      {
+        "id": "event_mechanism_puzzle",
+        "name": "机关谜题",
+        "difficulty": 1,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 500, "amount_max": 800}],
+        "hazards": [],
+        "has_npc": true,
+        "npc_type": "puzzle",
+        "npc_dialogue": "解开此阵，必有重赏。"
+      }
+    ],
+    "ELITE": [
+      {
+        "id": "elite_mechanism_nest",
+        "name": "机关巢穴",
+        "difficulty": 5,
+        "enemies": [{"enemy_id": "mechanism_general", "count_min": 1, "count_max": 1}, {"enemy_id": "mechanism_beast", "count_min": 3, "count_max": 5}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 500, "amount_max": 1000}],
+        "hazards": []
+      },
+      {
+        "id": "elite_mechanism_throne",
+        "name": "机关王座",
+        "difficulty": 5,
+        "enemies": [{"enemy_id": "mechanism_general", "count_min": 1, "count_max": 1}, {"enemy_id": "mechanism_general", "count_min": 1, "count_max": 1}],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 800, "amount_max": 1500}],
+        "hazards": []
+      }
+    ],
+    "SECRET": [
+      {
+        "id": "secret_mechanism_treasure",
+        "name": "天机宝藏",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 1000, "amount_max": 2000}],
+        "hazards": []
+      },
+      {
+        "id": "secret_mechanism_realm",
+        "name": "天机秘境",
+        "difficulty": 0,
+        "enemies": [],
+        "resources": [{"resource_id": "spirit_stone", "name": "灵石", "amount_min": 1500, "amount_max": 3000}],
+        "hazards": []
+      }
+    ]
+  }
+}
