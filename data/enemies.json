@@ -14,7 +14,8 @@
         "detectRange": 200.0,
         "dropItems": [
           {"id": "spirit_stone", "name": "灵石", "amount": [10, 30], "chance": 1.0},
-          {"id": "herb", "name": "灵草", "amount": [1, 3], "chance": 0.5}
+          {"id": "herb", "name": "灵草", "amount": [1, 3], "chance": 0.5},
+          {"id": "herb_seed", "name": "灵草种子", "amount": [1, 1], "chance": 0.15}
         ],
         "sprite": "res://assets/sprites/enemies/bamboo_spirit.png"
       },
@@ -30,7 +31,8 @@
         "detectRange": 250.0,
         "dropItems": [
           {"id": "spirit_stone", "name": "灵石", "amount": [15, 40], "chance": 1.0},
-          {"id": "herb", "name": "灵草", "amount": [2, 4], "chance": 0.6}
+          {"id": "herb", "name": "灵草", "amount": [2, 4], "chance": 0.6},
+          {"id": "herb_seed", "name": "灵草种子", "amount": [1, 1], "chance": 0.1}
         ],
         "sprite": "res://assets/sprites/enemies/bamboo_archer.png"
       },
@@ -80,7 +82,9 @@
         "dropItems": [
           {"id": "spirit_stone", "name": "灵石", "amount": [100, 200], "chance": 1.0},
           {"id": "herb", "name": "灵草", "amount": [10, 20], "chance": 0.8},
-          {"id": "equipment", "name": "装备", "rarity": "green", "chance": 0.3}
+          {"id": "equipment", "name": "装备", "rarity": "green", "chance": 0.3},
+          {"id": "quality_herb_seed", "name": "优质灵草种子", "amount": [1, 1], "chance": 0.25},
+          {"id": "quality_ore_seed", "name": "优质矿石种子", "amount": [1, 1], "chance": 0.2}
         ],
         "sprite": "res://assets/sprites/enemies/bamboo_elite.png"
       }
@@ -116,7 +120,9 @@
         {"id": "spirit_stone", "name": "灵石", "amount": [200, 300], "chance": 1.0},
         {"id": "bamboo_demon_core", "name": "竹妖内丹", "rarity": "blue", "chance": 1.0},
         {"id": "bamboo_demon_soul", "name": "竹妖王魂", "rarity": "purple", "chance": 0.3},
-        {"id": "technique_fragment", "name": "功法残页", "amount": [2, 5], "chance": 0.5}
+        {"id": "technique_fragment", "name": "功法残页", "amount": [2, 5], "chance": 0.5},
+        {"id": "rare_herb_seed", "name": "稀有灵草种子", "amount": [1, 2], "chance": 0.5},
+        {"id": "rare_ore_seed", "name": "稀有矿石种子", "amount": [1, 1], "chance": 0.4}
       ],
       "sprite": "res://assets/sprites/enemies/bamboo_king.png"
     }
@@ -136,7 +142,8 @@
         "detectRange": 250.0,
         "dropItems": [
           {"id": "spirit_stone", "name": "灵石", "amount": [20, 50], "chance": 1.0},
-          {"id": "fire_crystal", "name": "火晶石", "amount": [1, 3], "chance": 0.6}
+          {"id": "fire_crystal", "name": "火晶石", "amount": [1, 3], "chance": 0.6},
+          {"id": "ore_seed", "name": "矿石种子", "amount": [1, 1], "chance": 0.12}
         ],
         "sprite": "res://assets/sprites/enemies/fire_spirit.png"
       },
