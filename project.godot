@@ -38,6 +38,7 @@ FarmSystem="*res://scripts/systems/farm_system.gd"
 TreasureVaultSystem="*res://scripts/systems/treasure_vault_system.gd"
 NPCInteractionSystem="*res://scripts/systems/npc_interaction_system.gd"
 CombatFeedback="*res://scripts/systems/combat_feedback.gd"
+SceneTransition="*res://scripts/autoload/scene_transition.gd"
 
 [display]
 
