@@ -233,7 +233,7 @@ func _execute_pill_ultimate(ult: Dictionary, caster: Node2D) -> void:
 	scene.add_child(effect)
 
 	# 临时护盾
-	SkillSystem.apply_shield(caster, 500, 10.0)
+	SkillSystem.apply_shield({"shield_amount": 500, "shield_duration": 10.0}, caster)
 
 	# 视觉效果：绿色光环
 	var ring = ColorRect.new()

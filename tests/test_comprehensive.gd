@@ -161,14 +161,14 @@ func _run_game_manager_tests() -> void:
 	var over_withdraw = GameManager.withdraw_from_storage("spirit_stone", 999)
 	_check_eq(over_withdraw, 0, "取出超过库存返回0")
 
-	# 玩家受伤
+	# 玩家受伤（直接扣减，无减伤）
 	GameManager.player_data.health = 500
 	GameManager.player_take_damage(100)
-	_check_eq(GameManager.player_data.health, 450, "玩家受伤 100→450")
+	_check_eq(GameManager.player_data.health, 400, "玩家受伤 100→400")
 
 	# 玩家治疗
 	GameManager.player_heal(30)
-	_check_eq(GameManager.player_data.health, 480, "玩家治疗 450→480")
+	_check_eq(GameManager.player_data.health, 430, "玩家治疗 400→430")
 
 	# 治疗不超过最大值
 	GameManager.player_heal(999)
@@ -189,7 +189,8 @@ func _run_game_manager_tests() -> void:
 	GameManager.game_over()
 	_check_eq(GameManager.current_state, GameManager.GameState.GAME_OVER, "game_over 状态")
 
-	# 胜利
+	# 胜利（需先重置状态，因为 game_over 和 victory 互斥）
+	GameManager.current_state = GameManager.GameState.PLAYING
 	GameManager.victory()
 	_check_eq(GameManager.current_state, GameManager.GameState.VICTORY, "victory 状态")
 
@@ -726,6 +727,7 @@ func _run_farm_system_tests() -> void:
 
 	# 重置状态
 	FarmSystem.planted_crops.clear()
+	GameManager.storage = {"spirit_stone": 0, "herb": 0, "ore": 0, "artifact_spirit": 0}
 
 	# 测试作物数据
 	var crop_data = FarmSystem.get_crop_data("herb_seed")
