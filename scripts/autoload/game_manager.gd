@@ -252,13 +252,34 @@ static func calculate_damage(base_attack: int, skill_mult: float,
 
 ## 计算战斗力
 func get_combat_power() -> int:
-	return int(
+	var base = (
 		player_data.attack * 1.0 +
 		player_data.defense * 0.5 +
 		player_data.max_health * 0.2 +
 		player_data.crit_rate * 1000 +
 		player_data.crit_damage * 100
 	)
+	# 装备加成
+	var equip_bonus = 0
+	if has_node("/root/EquipmentSystem"):
+		var stats = EquipmentSystem.get_total_stats()
+		equip_bonus = int(stats.attack * 1.0 + stats.defense * 0.5 + stats.health * 0.2)
+	# 境界加成
+	var realm_bonus = 0
+	if has_node("/root/RealmSystem"):
+		var realm_stats = RealmSystem.get_realm_bonus()
+		realm_bonus = int(realm_stats.get("attack", 0) * 0.5 + realm_stats.get("defense", 0) * 0.3)
+	return int(base + equip_bonus + realm_bonus)
+
+## 获取推荐层数（基于战斗力）
+func get_recommended_layer() -> int:
+	var cp = get_combat_power()
+	if cp < 2000:
+		return 1
+	elif cp < 6000:
+		return 2
+	else:
+		return 3
 
 ## 进入下一层
 func go_to_next_layer() -> void:
