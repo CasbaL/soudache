@@ -930,49 +930,50 @@ static func get_layer3_secret_templates() -> Array[Dictionary]:
 # ──────────────────────────────────────────────
 
 ## 获取指定层、指定房间类型的模板列表
-static func get_templates(layer: int, room_type: RoomData.RoomType) -> Array[Dictionary]:
+static func get_templates(layer: int, room_type) -> Array[Dictionary]:
+	var RT = load("res://scripts/systems/room.gd")
 	match layer:
 		1:
 			match room_type:
-				RoomData.RoomType.COMBAT:
+				RT.RoomType.COMBAT:
 					return get_layer1_combat_templates()
-				RoomData.RoomType.RESOURCE:
+				RT.RoomType.RESOURCE:
 					return get_layer1_resource_templates()
-				RoomData.RoomType.EVENT:
+				RT.RoomType.EVENT:
 					return get_layer1_event_templates()
-				RoomData.RoomType.ELITE:
+				RT.RoomType.ELITE:
 					return get_layer1_elite_templates()
-				RoomData.RoomType.EXTRACT:
+				RT.RoomType.EXTRACT:
 					return get_layer1_extract_templates()
-				RoomData.RoomType.SECRET:
+				RT.RoomType.SECRET:
 					return get_layer1_secret_templates()
 		2:
 			match room_type:
-				RoomData.RoomType.COMBAT:
+				RT.RoomType.COMBAT:
 					return get_layer2_combat_templates()
-				RoomData.RoomType.RESOURCE:
+				RT.RoomType.RESOURCE:
 					return get_layer2_resource_templates()
-				RoomData.RoomType.EVENT:
+				RT.RoomType.EVENT:
 					return get_layer2_event_templates()
-				RoomData.RoomType.ELITE:
+				RT.RoomType.ELITE:
 					return get_layer2_elite_templates()
-				RoomData.RoomType.EXTRACT:
+				RT.RoomType.EXTRACT:
 					return get_layer2_extract_templates()
-				RoomData.RoomType.SECRET:
+				RT.RoomType.SECRET:
 					return get_layer2_secret_templates()
 		3:
 			match room_type:
-				RoomData.RoomType.COMBAT:
+				RT.RoomType.COMBAT:
 					return get_layer3_combat_templates()
-				RoomData.RoomType.RESOURCE:
+				RT.RoomType.RESOURCE:
 					return get_layer3_resource_templates()
-				RoomData.RoomType.EVENT:
+				RT.RoomType.EVENT:
 					return get_layer3_event_templates()
-				RoomData.RoomType.ELITE:
+				RT.RoomType.ELITE:
 					return get_layer3_elite_templates()
-				RoomData.RoomType.EXTRACT:
+				RT.RoomType.EXTRACT:
 					return get_layer3_extract_templates()
-				RoomData.RoomType.SECRET:
+				RT.RoomType.SECRET:
 					return get_layer3_secret_templates()
 	return []
 
@@ -1041,7 +1042,7 @@ static func get_layer_theme_colors(layer: int) -> Dictionary:
 	}
 
 ## 从模板随机选择一个
-static func pick_random_template(layer: int, room_type: RoomData.RoomType) -> Dictionary:
+static func pick_random_template(layer: int, room_type) -> Dictionary:
 	var templates = get_templates(layer, room_type)
 	if templates.is_empty():
 		return {}
