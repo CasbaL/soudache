@@ -22,6 +22,9 @@ var _compass: Control = null
 var _zone_enter_label: Label = null
 var _zone_enter_tween: Tween = null
 
+# 背包面板
+var _inventory_panel: PanelContainer = null
+
 # ============================================================
 # 预加载脚本
 # ============================================================
@@ -83,6 +86,9 @@ func _ready() -> void:
 
 	# 创建区域进入动画标签
 	_create_zone_enter_label()
+
+	# 创建背包按钮
+	_create_inventory_button()
 
 	print("[OpenWorldLevel] _ready 完成")
 
@@ -560,6 +566,73 @@ func _manage_enemy_activation() -> void:
 		elif dist > deactivation_range:
 			enemy.set_process(false)
 			enemy.set_physics_process(false)
+
+# ============================================================
+# 背包系统
+# ============================================================
+
+## 创建背包按钮
+func _create_inventory_button() -> void:
+	var btn = Button.new()
+	btn.name = "InventoryButton"
+	btn.text = "🎒"
+	btn.custom_minimum_size = Vector2(50, 50)
+	btn.position = Vector2(650, 70)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.18, 0.25, 0.8)
+	style.border_color = Color(0.77, 0.64, 0.35)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	btn.add_theme_stylebox_override("normal", style)
+
+	var hover = StyleBoxFlat.new()
+	hover.bg_color = Color(0.20, 0.24, 0.35, 0.9)
+	hover.border_color = Color(0.77, 0.64, 0.35)
+	hover.set_border_width_all(1)
+	hover.set_corner_radius_all(6)
+	btn.add_theme_stylebox_override("hover", hover)
+
+	btn.add_theme_font_size_override("font_size", 24)
+	btn.pressed.connect(_toggle_inventory)
+
+	if hud:
+		hud.add_child(btn)
+	else:
+		add_child(btn)
+
+## 切换背包面板
+func _toggle_inventory() -> void:
+	if _inventory_panel and _inventory_panel.visible:
+		_inventory_panel.visible = false
+		get_tree().paused = false
+	else:
+		_show_inventory()
+
+## 显示背包面板
+func _show_inventory() -> void:
+	if not _inventory_panel:
+		_inventory_panel = preload("res://scripts/ui/inventory_panel.gd").new()
+		_inventory_panel.name = "InventoryPanel"
+		_inventory_panel.set_anchors_preset(Control.PRESET_CENTER)
+		_inventory_panel.offset_left = -250
+		_inventory_panel.offset_top = -275
+		_inventory_panel.offset_right = 250
+		_inventory_panel.offset_bottom = 275
+		_inventory_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+		_inventory_panel.inventory_closed.connect(_on_inventory_closed)
+
+		if hud:
+			hud.add_child(_inventory_panel)
+		else:
+			add_child(_inventory_panel)
+
+	_inventory_panel.visible = true
+	get_tree().paused = true
+
+## 背包关闭回调
+func _on_inventory_closed() -> void:
+	get_tree().paused = false
 
 # ============================================================
 # 撤离点方向指示器

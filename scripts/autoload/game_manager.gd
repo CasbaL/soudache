@@ -203,12 +203,34 @@ func player_heal(amount: int) -> void:
 	player_data.health = min(player_data.max_health, player_data.health + amount)
 	player_health_changed.emit(player_data.health)
 
-## 添加物品到背包
+## 添加物品到背包（支持堆叠）
 func add_to_inventory(item: Dictionary) -> bool:
+	var item_id = item.get("id", "")
+	var item_amount = item.get("amount", 1)
+
+	# 尝试堆叠到已有同类物品
+	if item_id != "":
+		for i in range(inventory.size()):
+			var existing = inventory[i]
+			if existing.get("id", "") == item_id:
+				var existing_amount = existing.get("amount", 1)
+				var max_stack = existing.get("max_stack", 99)
+				var can_add = max_stack - existing_amount
+				if can_add > 0:
+					var to_add = mini(item_amount, can_add)
+					existing["amount"] = existing_amount + to_add
+					item_amount -= to_add
+					if item_amount <= 0:
+						inventory_changed.emit()
+						return true
+
+	# 无法完全堆叠，需要新格子
 	if inventory.size() >= max_inventory_size:
 		print("背包已满！")
 		return false
-	
+
+	# 剩余数量放入新格子
+	item["amount"] = item_amount
 	inventory.append(item)
 	inventory_changed.emit()
 	return true
