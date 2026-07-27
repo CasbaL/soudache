@@ -408,23 +408,28 @@ func _create_extraction_entity(pos: Vector2, zone) -> void:
 	extract.position = pos
 	extract.collision_layer = 8
 	extract.collision_mask = 1
+	extract.name = "ExtractPoint_%s" % zone.id
 
+	# 视觉：青色大方块
 	var sprite = ColorRect.new()
-	sprite.size = Vector2(40, 40)
-	sprite.position = Vector2(-20, -40)
-	sprite.color = Color(0.2, 0.8, 0.8)
+	sprite.size = Vector2(60, 60)
+	sprite.position = Vector2(-30, -30)
+	sprite.color = Color(0.2, 0.8, 0.8, 0.8)
 	extract.add_child(sprite)
 
+	# 碰撞区域（大一些方便触发）
 	var collision = CollisionShape2D.new()
-	var shape = RectangleShape2D.new()
-	shape.size = Vector2(40, 40)
+	var shape = CircleShape2D.new()
+	shape.radius = 50.0
 	collision.shape = shape
 	extract.add_child(collision)
 
+	# 标签
 	var label = Label.new()
-	label.text = "撤离点"
-	label.position = Vector2(-20, -60)
+	label.text = "🚪 撤离点"
+	label.position = Vector2(-30, -50)
 	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.9))
 	extract.add_child(label)
 
 	extract.body_entered.connect(_on_extract_entered.bind(extract, zone))
@@ -446,12 +451,18 @@ func _show_extract_confirm(zone) -> void:
 	if _extract_confirm_dialog and _extract_confirm_dialog.visible:
 		return
 
+	# 先暂停游戏
+	get_tree().paused = true
+
 	_extract_confirm_dialog = ConfirmationDialog.new()
 	_extract_confirm_dialog.title = "撤离点"
 	_extract_confirm_dialog.dialog_text = "是否立即撤离？\n\n背包物品将保存到仓库。\n继续探索可能获得更好奖励。"
 	_extract_confirm_dialog.ok_button_text = "撤离"
 	_extract_confirm_dialog.cancel_button_text = "继续探索"
-	_extract_confirm_dialog.min_size = Vector2(300, 150)
+	_extract_confirm_dialog.min_size = Vector2(350, 180)
+
+	# 关键：设置弹窗在暂停时也能处理输入
+	_extract_confirm_dialog.process_mode = Node.PROCESS_MODE_ALWAYS
 
 	_extract_confirm_dialog.confirmed.connect(_on_extract_confirmed)
 	_extract_confirm_dialog.canceled.connect(_on_extract_canceled)
@@ -463,9 +474,6 @@ func _show_extract_confirm(zone) -> void:
 		add_child(_extract_confirm_dialog)
 
 	_extract_confirm_dialog.popup_centered()
-
-	# 暂停游戏
-	get_tree().paused = true
 
 ## 确认撤离
 func _on_extract_confirmed() -> void:
