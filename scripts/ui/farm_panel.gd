@@ -131,7 +131,7 @@ func _build_field_panel(parent: Control) -> void:
 	slot_container.columns = 5
 	slot_container.add_theme_constant_override("h_separation", 10)
 	slot_container.add_theme_constant_override("v_separation", 10)
-	slot_container.alignment = GridContainer.ALIGNMENT_CENTER
+	# GridContainer doesn't have alignment in Godot 4
 	vbox.add_child(slot_container)
 
 func _update_slots() -> void:
