@@ -71,7 +71,22 @@ signal crop_harvested(slot: int, output_id: String, amount: int)
 signal crop_ready(slot: int)
 
 func _ready() -> void:
-	pass
+	# 登录时自动收获成熟作物
+	call_deferred("_auto_harvest_on_login")
+
+## 登录时自动收获成熟作物
+func _auto_harvest_on_login() -> void:
+	var harvested = harvest_all()
+	if harvested.size() > 0:
+		var total_herb = 0
+		var total_ore = 0
+		for item in harvested:
+			if item.get("output_id", "") == "herb":
+				total_herb += item.get("amount", 0)
+			elif item.get("output_id", "") == "ore":
+				total_ore += item.get("amount", 0)
+		if total_herb > 0 or total_ore > 0:
+			print("[FarmSystem] 离线收获: 灵草+%d, 矿石+%d" % [total_herb, total_ore])
 
 func _process(_delta: float) -> void:
 	var now = Time.get_unix_time_from_system()
