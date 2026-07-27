@@ -1,5 +1,5 @@
 ## 开放世界关卡
-## 使用单一大地图，分散敌人、资源、NPC
+## 使用房间制地图，通过门触发房间过渡
 extends Node2D
 
 # ============================================================
@@ -9,13 +9,24 @@ extends Node2D
 @onready var player = $Player
 @onready var camera = $Player/Camera2D
 @onready var hud: CanvasLayer = $HUD
-@onready var open_world_map: Node2D = $OpenWorldMap
+@onready var map_renderer: Node2D = $MapRenderer
 
 # ============================================================
 # 预加载脚本
 # ============================================================
 
-var _OpenWorldMapScript = preload("res://scripts/systems/open_world_map.gd")
+var _MapGeneratorScript = preload("res://scripts/systems/map_generator.gd")
+
+# ============================================================
+# 地图状态
+# ============================================================
+
+var _map_generator = null
+var _map_data: Dictionary = {}
+var _rooms: Dictionary = {}  # { id: RoomData }
+var _current_room_id: String = ""
+var _door_triggers: Array[Area2D] = []
+var _is_transitioning: bool = false
 
 # ============================================================
 # 方向指示器
@@ -24,8 +35,6 @@ var _OpenWorldMapScript = preload("res://scripts/systems/open_world_map.gd")
 var _extract_indicator: Control = null
 var _extract_arrow: ColorRect = null
 var _extract_label: Label = null
-
-# 屏幕边距
 const INDICATOR_MARGIN: float = 60.0
 
 # ============================================================
@@ -34,32 +43,44 @@ const INDICATOR_MARGIN: float = 60.0
 
 func _ready() -> void:
 	print("[OpenWorldLevel] _ready 开始")
-	
+
 	# 初始化游戏
 	GameManager.start_new_game()
-	
-	# 初始化地图
-	_init_map()
-	
+
+	# 生成地图
+	_generate_map()
+
 	# 连接信号
 	_connect_signals()
-	
+
 	# 初始化HUD
 	if hud and player:
 		hud.initialize(player)
-	
-	# 创建撤离点指示器
+
+	# 创建撤离点方向指示器
 	_create_extract_indicator()
-	
-	# 放置玩家到出生点
-	_place_player_at_spawn()
-	
+
 	print("[OpenWorldLevel] _ready 完成")
 
-## 初始化地图
-func _init_map() -> void:
-	if open_world_map:
-		print("[OpenWorldLevel] 地图初始化完成")
+## 生成地图并渲染第一个房间
+func _generate_map() -> void:
+	_map_generator = _MapGeneratorScript.new()
+	var layer = GameManager.current_layer
+	_map_data = _map_generator.generate_layer(layer)
+	_rooms = _map_data.rooms
+
+	print("[OpenWorldLevel] 地图生成完成: %d 个房间" % _rooms.size())
+
+	# 初始化迷雾系统
+	FogSystem.initialize(_rooms, _map_data.start_room_id)
+
+	# 初始化渲染器
+	if map_renderer:
+		map_renderer.set_layer_theme(layer)
+		map_renderer.initialize_map(_rooms)
+
+	# 进入起始房间
+	_enter_room(_map_data.start_room_id, "")
 
 ## 连接信号
 func _connect_signals() -> void:
@@ -68,43 +89,237 @@ func _connect_signals() -> void:
 	if player and player.has_signal("died"):
 		player.died.connect(_on_player_died)
 
-## 放置玩家到出生点
-func _place_player_at_spawn() -> void:
-	if player and open_world_map:
-		# 出生点在左上角
-		player.position = Vector2(300, 300)
-		print("[OpenWorldLevel] 玩家放置到出生点: %s" % str(player.position))
+# ============================================================
+# 房间过渡
+# ============================================================
 
-## 创建撤离点方向指示器
-func _create_extract_indicator() -> void:
-	# 创建指示器容器（添加到HUD上，这样它会固定在屏幕上）
-	_extract_indicator = Control.new()
-	_extract_indicator.name = "ExtractIndicator"
-	_extract_indicator.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_extract_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	# 添加到HUD CanvasLayer上
-	if hud:
-		hud.add_child(_extract_indicator)
+## 进入新房间
+func _enter_room(room_id: String, from_direction: String) -> void:
+	if room_id not in _rooms:
+		push_error("房间不存在: %s" % room_id)
+		return
+
+	_is_transitioning = true
+	_current_room_id = room_id
+	var room: RoomData = _rooms[room_id]
+
+	print("[OpenWorldLevel] 进入房间: %s (%s)" % [room_id, room.get_type_name()])
+
+	# 更新迷雾
+	FogSystem.enter_room(room_id)
+
+	# 渲染房间
+	if map_renderer:
+		map_renderer.render_room(room_id)
+		var fog_states = FogSystem.get_all_fog_states()
+		map_renderer.render_minimap(room_id, fog_states)
+
+	# 创建门触发器
+	_create_door_triggers(room)
+
+	# 生成房间内的敌人和资源
+	_spawn_room_content(room)
+
+	# 设置玩家位置
+	if from_direction != "":
+		player.position = RoomTransitionController.get_entry_position(from_direction)
 	else:
-		add_child(_extract_indicator)
-	
-	# 创建箭头
-	_extract_arrow = ColorRect.new()
-	_extract_arrow.name = "Arrow"
-	_extract_arrow.size = Vector2(20, 20)
-	_extract_arrow.color = Color(0.2, 0.8, 0.8, 0.8)  # 青色
-	_extract_indicator.add_child(_extract_arrow)
-	
-	# 创建距离标签
-	_extract_label = Label.new()
-	_extract_label.name = "DistanceLabel"
-	_extract_label.text = "撤离点"
-	_extract_label.add_theme_font_size_override("font_size", 14)
-	_extract_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.8))
-	_extract_indicator.add_child(_extract_label)
-	
-	print("[OpenWorldLevel] 撤离点指示器创建完成")
+		# 起始房间，玩家在中央
+		player.position = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
+
+	# 重置摄像机
+	if camera:
+		camera.reset_smoothing()
+
+	_is_transitioning = false
+
+## 创建门触发器
+func _create_door_triggers(room: RoomData) -> void:
+	# 清除旧触发器
+	for trigger in _door_triggers:
+		if is_instance_valid(trigger):
+			trigger.queue_free()
+	_door_triggers.clear()
+
+	# 为每个连接创建触发器
+	for conn_id in room.connections:
+		if conn_id not in _rooms:
+			continue
+		var other: RoomData = _rooms[conn_id]
+		var direction = room.get_direction_to(other)
+		_create_single_door_trigger(direction, conn_id)
+
+## 创建单个门触发器
+func _create_single_door_trigger(direction: String, target_room_id: String) -> void:
+	var trigger = Area2D.new()
+	trigger.name = "DoorTrigger_%s" % direction
+
+	# 设置碰撞层（检测玩家）
+	trigger.collision_layer = 0
+	trigger.collision_mask = 1
+
+	# 设置位置
+	var rect = RoomTransitionController.get_door_trigger_rect(direction)
+	var collision = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = rect.size
+	collision.shape = shape
+	collision.position = rect.position + rect.size / 2
+	trigger.add_child(collision)
+
+	# 连接信号
+	trigger.body_entered.connect(_on_door_entered.bind(direction, target_room_id))
+
+	add_child(trigger)
+	_door_triggers.append(trigger)
+
+## 玩家进入门触发器
+func _on_door_entered(body: Node2D, direction: String, target_room_id: String) -> void:
+	if _is_transitioning:
+		return
+	if not body is Player:
+		return
+
+	print("[OpenWorldLevel] 玩家进入门: %s -> %s" % [direction, target_room_id])
+
+	# 淡出过渡
+	_is_transitioning = true
+	await SceneTransition._fade_out(0.2)
+
+	# 进入新房间
+	var entry_dir = RoomTransitionController.opposite_direction(direction)
+	_enter_room(target_room_id, entry_dir)
+
+	# 淡入
+	await SceneTransition._fade_in(0.2)
+
+# ============================================================
+# 房间内容生成
+# ============================================================
+
+## 生成房间内的敌人和资源
+func _spawn_room_content(room: RoomData) -> void:
+	# 清除当前场景中的敌人
+	_clear_enemies()
+
+	# 如果房间已清除，不再生成
+	if room.is_cleared:
+		return
+
+	# 生成敌人
+	for enemy_config in room.enemies:
+		var enemy_id = enemy_config.get("enemy_id", "")
+		var count = enemy_config.get("count", 1)
+		for i in range(count):
+			var spawn_pos = _get_random_room_position()
+			EnemySpawner.spawn_enemy(enemy_id, spawn_pos)
+
+	# 生成资源
+	for res_config in room.resources:
+		var amount = res_config.get("amount", 1)
+		for i in range(amount):
+			var spawn_pos = _get_random_room_position()
+			_create_resource_pickup(res_config, spawn_pos)
+
+	# 如果是撤离点，生成撤离点实体
+	if room.has_extraction_point:
+		var center = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
+		_create_extraction_entity(center)
+
+## 清除场景中的敌人
+func _clear_enemies() -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		enemy.queue_free()
+
+## 获取房间内的随机位置
+func _get_random_room_position() -> Vector2:
+	var margin = 80.0
+	return Vector2(
+		randf_range(margin, RoomData.ROOM_WIDTH - margin),
+		randf_range(margin, RoomData.ROOM_HEIGHT - margin)
+	)
+
+## 创建资源拾取物
+func _create_resource_pickup(res_config: Dictionary, pos: Vector2) -> void:
+	var resource = Area2D.new()
+	resource.position = pos
+	resource.collision_layer = 4
+	resource.collision_mask = 1
+
+	var sprite = ColorRect.new()
+	sprite.size = Vector2(16, 16)
+	sprite.position = Vector2(-8, -8)
+	var res_id = res_config.get("resource_id", "")
+	match res_id:
+		"spirit_stone":
+			sprite.color = Color(0.3, 0.6, 1.0)
+		"herb":
+			sprite.color = Color(0.2, 0.8, 0.2)
+		"ore":
+			sprite.color = Color(0.6, 0.4, 0.2)
+		_:
+			sprite.color = Color(0.5, 0.5, 0.5)
+	resource.add_child(sprite)
+
+	var collision = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = 15
+	collision.shape = shape
+	resource.add_child(collision)
+
+	resource.set_meta("resource_id", res_id)
+	resource.set_meta("resource_name", res_config.get("name", ""))
+	resource.set_meta("amount", res_config.get("amount", 1))
+
+	resource.body_entered.connect(_on_resource_collected.bind(resource))
+	add_child(resource)
+
+## 资源被收集
+func _on_resource_collected(body: Node2D, resource: Node2D) -> void:
+	if not body is Player:
+		return
+	var item = {
+		"id": resource.get_meta("resource_id", ""),
+		"name": resource.get_meta("resource_name", ""),
+		"amount": resource.get_meta("amount", 1),
+	}
+	if GameManager.add_to_inventory(item):
+		resource.queue_free()
+
+## 创建撤离点实体
+func _create_extraction_entity(pos: Vector2) -> void:
+	var extract = Area2D.new()
+	extract.position = pos
+	extract.collision_layer = 8
+	extract.collision_mask = 1
+
+	var sprite = ColorRect.new()
+	sprite.size = Vector2(40, 40)
+	sprite.position = Vector2(-20, -40)
+	sprite.color = Color(0.2, 0.8, 0.8)
+	extract.add_child(sprite)
+
+	var collision = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = Vector2(40, 40)
+	collision.shape = shape
+	extract.add_child(collision)
+
+	var label = Label.new()
+	label.text = "撤离点"
+	label.position = Vector2(-20, -60)
+	label.add_theme_font_size_override("font_size", 14)
+	extract.add_child(label)
+
+	extract.body_entered.connect(_on_extract_entered.bind(extract))
+	add_child(extract)
+
+## 撤离点交互
+func _on_extract_entered(body: Node2D, _extract: Node2D) -> void:
+	if body is Player:
+		print("[OpenWorldLevel] 到达撤离点")
+		GameManager.victory()
 
 # ============================================================
 # 信号回调
@@ -116,105 +331,91 @@ func _on_player_health_changed(new_health: int) -> void:
 
 func _on_player_died() -> void:
 	print("[OpenWorldLevel] 玩家死亡")
-	# game_manager.game_over() 已在 player.die() 中调用
 
 # ============================================================
 # 物理更新
 # ============================================================
 
 func _physics_process(_delta: float) -> void:
-	# 限制玩家在地图范围内
-	if player and open_world_map:
-		var map_size = open_world_map.get_map_size()
-		player.position = player.position.clamp(Vector2.ZERO, map_size)
-	
 	# 更新撤离点指示器
 	_update_extract_indicator()
 
-## 更新撤离点方向指示器
-func _update_extract_indicator() -> void:
-	if not player or not open_world_map or not _extract_indicator:
-		return
-	
-	# 获取最近的撤离点
-	var extract_points = open_world_map.get_extract_points()
-	if extract_points.is_empty():
-		_extract_indicator.visible = false
-		return
-	
-	# 找到最近的撤离点
-	var nearest_extract = extract_points[0]
-	var nearest_dist = player.position.distance_to(extract_points[0])
-	for point in extract_points:
-		var dist = player.position.distance_to(point)
-		if dist < nearest_dist:
-			nearest_dist = dist
-			nearest_extract = point
-	
-	# 计算屏幕位置
-	var viewport_size = get_viewport().get_visible_rect().size
-	var screen_center = viewport_size / 2
-	
-	# 获取摄像机位置（如果没有摄像机，使用玩家位置）
-	var camera_pos = Vector2.ZERO
-	if camera and camera is Camera2D:
-		camera_pos = camera.global_position
-	else:
-		camera_pos = player.position
-	
-	# 计算撤离点在屏幕上的位置
-	var extract_screen_pos = nearest_extract - camera_pos + screen_center
-	
-	# 检查撤离点是否在屏幕内（增加边距）
-	var margin = 50.0
-	var is_on_screen = (
-		extract_screen_pos.x > margin and
-		extract_screen_pos.x < viewport_size.x - margin and
-		extract_screen_pos.y > margin and
-		extract_screen_pos.y < viewport_size.y - margin
-	)
-	
-	# 调试日志（每60帧输出一次）
-	if Engine.get_process_frames() % 60 == 0:
-		print("[Indicator] 玩家: %s, 摄像机: %s, 撤离点: %s, 屏幕位置: %s, 在屏幕内: %s" % [
-			str(player.position), str(camera_pos), str(nearest_extract), str(extract_screen_pos), str(is_on_screen)
-		])
-	
-	if is_on_screen:
-		# 在屏幕内，隐藏指示器
-		_extract_indicator.visible = false
-		return
-	
-	# 在屏幕外，显示指示器
-	_extract_indicator.visible = true
-	
-	# 计算方向（从屏幕中心指向撤离点）
-	var direction = (extract_screen_pos - screen_center).normalized()
-	
-	# 计算箭头位置（屏幕边缘）
-	var arrow_pos = Vector2.ZERO
-	arrow_pos.x = clamp(screen_center.x + direction.x * (screen_center.x - INDICATOR_MARGIN), INDICATOR_MARGIN, viewport_size.x - INDICATOR_MARGIN)
-	arrow_pos.y = clamp(screen_center.y + direction.y * (screen_center.y - INDICATOR_MARGIN), INDICATOR_MARGIN, viewport_size.y - INDICATOR_MARGIN)
-	
-	# 设置箭头位置
-	_extract_arrow.position = arrow_pos - Vector2(10, 10)
-	
-	# 设置箭头旋转（指向撤离点方向）
-	_extract_arrow.rotation = direction.angle()
-	
-	# 设置标签位置
-	_extract_label.position = arrow_pos + Vector2(15, -8)
-	
-	# 更新距离文本
-	var dist_text = _format_distance(nearest_dist)
-	_extract_label.text = "撤离 %s" % dist_text
+# ============================================================
+# 撤离点方向指示器
+# ============================================================
 
-## 格式化距离
-func _format_distance(distance: float) -> String:
-	if distance < 100:
-		return "%dm" % int(distance)
-	elif distance < 1000:
-		var rounded = int(distance / 10) * 10
-		return "%dm" % rounded
+func _create_extract_indicator() -> void:
+	_extract_indicator = Control.new()
+	_extract_indicator.name = "ExtractIndicator"
+	_extract_indicator.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_extract_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if hud:
+		hud.add_child(_extract_indicator)
 	else:
-		return "%.1fkm" % (distance / 1000)
+		add_child(_extract_indicator)
+
+	_extract_arrow = ColorRect.new()
+	_extract_arrow.name = "Arrow"
+	_extract_arrow.size = Vector2(20, 20)
+	_extract_arrow.color = Color(0.2, 0.8, 0.8, 0.8)
+	_extract_indicator.add_child(_extract_arrow)
+
+	_extract_label = Label.new()
+	_extract_label.name = "DistanceLabel"
+	_extract_label.text = "撤离点"
+	_extract_label.add_theme_font_size_override("font_size", 14)
+	_extract_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.8))
+	_extract_indicator.add_child(_extract_label)
+
+func _update_extract_indicator() -> void:
+	if not _extract_indicator or not player:
+		return
+
+	# 查找当前房间的撤离点连接
+	var room = _rooms.get(_current_room_id)
+	if not room:
+		_extract_indicator.visible = false
+		return
+
+	# 找到最近的撤离点房间
+	var extract_room_id = _find_nearest_extract_room()
+	if extract_room_id == "":
+		_extract_indicator.visible = false
+		return
+
+	# 撤离点在屏幕内时不显示
+	var extract_room: RoomData = _rooms[extract_room_id]
+	var dir = room.get_direction_to(extract_room) if room.is_adjacent_to(extract_room) else ""
+	if dir != "":
+		# 相邻房间的撤离点，通过门方向指示
+		_show_direction_indicator(dir)
+	else:
+		# 非相邻房间，隐藏指示器
+		_extract_indicator.visible = false
+
+func _find_nearest_extract_room() -> String:
+	for room_id in _rooms:
+		var room: RoomData = _rooms[room_id]
+		if room.has_extraction_point:
+			return room_id
+	return ""
+
+func _show_direction_indicator(direction: String) -> void:
+	_extract_indicator.visible = true
+	var viewport_size = get_viewport().get_visible_rect().size
+	var arrow_pos: Vector2
+
+	match direction:
+		"north":
+			arrow_pos = Vector2(viewport_size.x / 2, INDICATOR_MARGIN)
+		"south":
+			arrow_pos = Vector2(viewport_size.x / 2, viewport_size.y - INDICATOR_MARGIN)
+		"east":
+			arrow_pos = Vector2(viewport_size.x - INDICATOR_MARGIN, viewport_size.y / 2)
+		"west":
+			arrow_pos = Vector2(INDICATOR_MARGIN, viewport_size.y / 2)
+
+	_extract_arrow.position = arrow_pos - Vector2(10, 10)
+	_extract_label.position = arrow_pos + Vector2(15, -8)
+	_extract_label.text = "撤离点 →"
