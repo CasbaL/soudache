@@ -212,7 +212,10 @@ func _spawn_room_content(room: RoomData) -> void:
 		var count = enemy_config.get("count", 1)
 		for i in range(count):
 			var spawn_pos = _get_random_room_position()
-			EnemySpawner.spawn_enemy(enemy_id, spawn_pos)
+			var enemy = EnemySpawner.spawn_enemy(enemy_id, spawn_pos)
+			# 精英死亡后揭示隐藏房间
+			if enemy and enemy.has_signal("died"):
+				enemy.died.connect(_on_enemy_died.bind(room))
 
 	# 生成资源
 	for res_config in room.resources:
@@ -225,6 +228,74 @@ func _spawn_room_content(room: RoomData) -> void:
 	if room.has_extraction_point:
 		var center = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
 		_create_extraction_entity(center)
+
+	# 如果是NPC事件房间，生成NPC
+	if room.has_npc:
+		var center = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
+		_create_npc_entity(room, center)
+
+## 敌人死亡回调（用于揭示隐藏房间）
+func _on_enemy_died(room: RoomData) -> void:
+	# 检查房间是否全部清除
+	var enemies_alive = get_tree().get_nodes_in_group("enemies")
+	if enemies_alive.size() <= 1:  # 最后一个敌人
+		room.mark_cleared()
+		# 检查是否有相邻的隐藏房间
+		_reveal_adjacent_secrets(room)
+
+## 揭示相邻的隐藏房间
+func _reveal_adjacent_secrets(room: RoomData) -> void:
+	for conn_id in room.connections:
+		if conn_id not in _rooms:
+			continue
+		var connected_room: RoomData = _rooms[conn_id]
+		if connected_room.type == RoomData.RoomType.SECRET and not connected_room.is_secret_visible:
+			connected_room.is_secret_visible = true
+			# 创建通往隐藏房间的门
+			var direction = room.get_direction_to(connected_room)
+			_create_single_door_trigger(direction, conn_id)
+			print("[OpenWorldLevel] 隐藏房间已揭示: %s" % conn_id)
+
+## 创建NPC实体
+func _create_npc_entity(room: RoomData, pos: Vector2) -> void:
+	var npc = Area2D.new()
+	npc.position = pos
+	npc.collision_layer = 0
+	npc.collision_mask = 1
+
+	var sprite = ColorRect.new()
+	sprite.size = Vector2(20, 30)
+	sprite.position = Vector2(-10, -30)
+	sprite.color = Color(0.8, 0.6, 0.2)
+	npc.add_child(sprite)
+
+	var collision = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = Vector2(20, 30)
+	collision.shape = shape
+	npc.add_child(collision)
+
+	var label = Label.new()
+	label.text = "NPC"
+	label.position = Vector2(-15, -50)
+	label.add_theme_font_size_override("font_size", 12)
+	npc.add_child(label)
+
+	npc.body_entered.connect(_on_npc_entered.bind(room))
+	add_child(npc)
+
+## 玩家进入NPC区域
+func _on_npc_entered(body: Node2D, room: RoomData) -> void:
+	if not body is Player:
+		return
+	# 根据模板ID确定NPC类型
+	var template_id = room.template_id
+	if "merchant" in template_id:
+		NPCInteractionSystem.start_dialogue("merchant_%d" % GameManager.current_layer)
+	elif "mystic" in template_id or "spirit" in template_id:
+		NPCInteractionSystem.start_dialogue("mystic_%d" % GameManager.current_layer)
+	elif "trapped" in template_id:
+		NPCInteractionSystem.rescue_cultivator("trapped_%d" % GameManager.current_layer)
 
 ## 清除场景中的敌人
 func _clear_enemies() -> void:
