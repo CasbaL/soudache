@@ -6,22 +6,22 @@ extends Node
 # 境界列表（索引 = 境界等级 0-4）
 const REALM_NAMES = ["炼气", "筑基", "金丹", "元婴", "化神"]
 
-# 各境界属性加成
+# 各境界属性加成（累加式，化神总计 +400 攻击）
 const REALM_BONUSES = [
-	{"attack": 50,  "defense": 30,  "health": 200},   # 炼气
-	{"attack": 120, "defense": 70,  "health": 500},   # 筑基
-	{"attack": 250, "defense": 150, "health": 1000},  # 金丹
-	{"attack": 500, "defense": 300, "health": 2000},  # 元婴
-	{"attack": 1000,"defense": 600, "health": 4000},  # 化神
+	{"attack": 30,  "defense": 15,  "health": 100},   # 炼气
+	{"attack": 60,  "defense": 30,  "health": 200},   # 筑基
+	{"attack": 100, "defense": 50,  "health": 350},   # 金丹
+	{"attack": 150, "defense": 80,  "health": 500},   # 元婴
+	{"attack": 200, "defense": 120, "health": 700},   # 化神
 ]
 
 # 突破消耗
 const ADVANCE_COSTS = [
 	{},  # 初始炼气不需要消耗
-	{"spirit_stone": 1000},
-	{"spirit_stone": 3000, "herb": 100},
-	{"spirit_stone": 8000, "herb": 300, "artifact_spirit": 10},
-	{"spirit_stone": 20000, "herb": 800, "artifact_spirit": 30},
+	{"spirit_stone": 500},
+	{"spirit_stone": 1500, "herb": 50},
+	{"spirit_stone": 4000, "herb": 150, "artifact_spirit": 5},
+	{"spirit_stone": 10000, "herb": 400, "artifact_spirit": 15},
 ]
 
 # 当前境界索引（0 = 炼气）
