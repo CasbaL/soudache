@@ -219,7 +219,7 @@ func take_damage(damage: int, is_crit: bool = false) -> void:
 	health_changed.emit(current_health)
 	
 	# 显示伤害数字
-	show_damage_number(actual_damage, is_crit)
+	show_damage_number(damage, is_crit)
 	
 	# 播放受伤动画（如果存在）
 	if animation_player.has_animation("hurt"):

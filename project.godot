@@ -50,19 +50,6 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
 
-[performance]
-
-# 帧率限制（移动端优化）
-limits/fps/force_fps=60
-# 渲染优化
-rendering/textures/canvas_textures/default_texture_filter=0
-
-[input_devices]
-
-# 触控设置
-pointing/emulate_touch_from_mouse=true
-pointing/emulate_mouse_from_touch=true
-
 [input]
 
 move_up={
@@ -111,6 +98,10 @@ ultimate={
 ]
 }
 
+[input_devices]
+
+"#è§¦æ§è®¾ç½®pointing/emulate_touch_from_mouse"=true
+
 [layer_names]
 
 2d_physics/layer_1="player"
@@ -119,6 +110,11 @@ ultimate={
 2d_physics/layer_4="walls"
 2d_physics/layer_5="projectiles"
 2d_physics/layer_6="enemy_bullets"
+
+[performance]
+
+"#å¸§çéå¶ï¼ç§»å¨ç«¯ä¼åï¼limits/fps/force_fps"=60
+"#æ¸²æä¼årendering/textures/canvas_textures/default_texture_filter"=0
 
 [physics]
 

@@ -1,5 +1,5 @@
-## 开放世界关卡
-## 使用房间制地图，通过门触发房间过渡
+## 开放世界关卡（大地图版本）
+## 连续大地图，玩家自由移动，敌人/资源/NPC/撤离点散布在地图各处
 extends Node2D
 
 # ============================================================
@@ -15,6 +15,13 @@ extends Node2D
 var _boss_health_bar: CanvasLayer = null
 var _boss_announcement_label: Label = null
 
+# 指南针 UI
+var _compass: Control = null
+
+# 区域进入动画
+var _zone_enter_label: Label = null
+var _zone_enter_tween: Tween = null
+
 # ============================================================
 # 预加载脚本
 # ============================================================
@@ -27,10 +34,17 @@ var _MapGeneratorScript = preload("res://scripts/systems/map_generator.gd")
 
 var _map_generator = null
 var _map_data: Dictionary = {}
-var _rooms: Dictionary = {}  # { id: RoomData }
-var _current_room_id: String = ""
-var _door_triggers: Array[Area2D] = []
+var _zones: Dictionary = {}  # { id }
+var _map_size: Vector2i = Vector2i.ZERO
+var _current_zone = null
 var _is_transitioning: bool = false
+
+# 实体管理
+var _active_enemies: Array[Node2D] = []
+var _active_resources: Array[Node2D] = []
+var _active_npcs: Array[Node2D] = []
+var _extract_entities: Array[Node2D] = []
+var _boss_entity: Node2D = null
 
 # ============================================================
 # 方向指示器
@@ -51,7 +65,7 @@ func _ready() -> void:
 	# 初始化游戏
 	GameManager.start_new_game()
 
-	# 生成地图
+	# 生成大地图
 	_generate_map()
 
 	# 连接信号
@@ -64,27 +78,41 @@ func _ready() -> void:
 	# 创建撤离点方向指示器
 	_create_extract_indicator()
 
+	# 创建指南针
+	_create_compass()
+
+	# 创建区域进入动画标签
+	_create_zone_enter_label()
+
 	print("[OpenWorldLevel] _ready 完成")
 
-## 生成地图并渲染第一个房间
+## 生成大地图
 func _generate_map() -> void:
 	_map_generator = _MapGeneratorScript.new()
 	var layer = GameManager.current_layer
 	_map_data = _map_generator.generate_layer(layer)
-	_rooms = _map_data.rooms
+	_zones = _map_data.zones
+	_map_size = _map_data.map_size
 
-	print("[OpenWorldLevel] 地图生成完成: %d 个房间" % _rooms.size())
+	print("[OpenWorldLevel] 大地图生成完成: %dx%d, %d 个区域" % [_map_size.x, _map_size.y, _zones.size()])
 
 	# 初始化迷雾系统
-	FogSystem.initialize(_rooms, _map_data.start_room_id)
+	FogSystem.initialize(_zones, _map_size)
 
 	# 初始化渲染器
 	if map_renderer:
 		map_renderer.set_layer_theme(layer)
-		map_renderer.initialize_map(_rooms)
+		map_renderer.initialize_map(_zones, _map_size)
 
-	# 进入起始房间
-	_enter_room(_map_data.start_room_id, "")
+	# 设置玩家位置（出生点）
+	player.position = _map_data.spawn_position
+
+	# 重置摄像机
+	if camera:
+		camera.reset_smoothing()
+
+	# 生成所有实体
+	_spawn_all_entities()
 
 ## 连接信号
 func _connect_signals() -> void:
@@ -94,228 +122,116 @@ func _connect_signals() -> void:
 		player.died.connect(_on_player_died)
 
 # ============================================================
-# 房间过渡
+# 实体生成
 # ============================================================
 
-## 进入新房间
-func _enter_room(room_id: String, from_direction: String) -> void:
-	if room_id not in _rooms:
-		push_error("房间不存在: %s" % room_id)
-		return
-
-	_is_transitioning = true
-	_current_room_id = room_id
-	var room: RoomData = _rooms[room_id]
-
-	print("[OpenWorldLevel] 进入房间: %s (%s)" % [room_id, room.get_type_name()])
-
-	# 更新迷雾
-	FogSystem.enter_room(room_id)
-
-	# 渲染房间
-	if map_renderer:
-		map_renderer.render_room(room_id)
-		var fog_states = FogSystem.get_all_fog_states()
-		map_renderer.render_minimap(room_id, fog_states)
-
-	# 创建门触发器
-	_create_door_triggers(room)
-
-	# 生成房间内的敌人和资源
-	_spawn_room_content(room)
-
-	# 设置玩家位置
-	if from_direction != "":
-		player.position = RoomTransitionController.get_entry_position(from_direction)
-	else:
-		# 起始房间，玩家在中央
-		player.position = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
-
-	# 重置摄像机
-	if camera:
-		camera.reset_smoothing()
-
-	_is_transitioning = false
-
-## 创建门触发器
-func _create_door_triggers(room: RoomData) -> void:
-	# 清除旧触发器
-	for trigger in _door_triggers:
-		if is_instance_valid(trigger):
-			trigger.queue_free()
-	_door_triggers.clear()
-
-	# 为每个连接创建触发器
-	for conn_id in room.connections:
-		if conn_id not in _rooms:
-			continue
-		var other: RoomData = _rooms[conn_id]
-		var direction = room.get_direction_to(other)
-		_create_single_door_trigger(direction, conn_id)
-
-## 创建单个门触发器
-func _create_single_door_trigger(direction: String, target_room_id: String) -> void:
-	var trigger = Area2D.new()
-	trigger.name = "DoorTrigger_%s" % direction
-
-	# 设置碰撞层（检测玩家）
-	trigger.collision_layer = 0
-	trigger.collision_mask = 1
-
-	# 设置位置
-	var rect = RoomTransitionController.get_door_trigger_rect(direction)
-	var collision = CollisionShape2D.new()
-	var shape = RectangleShape2D.new()
-	shape.size = rect.size
-	collision.shape = shape
-	collision.position = rect.position + rect.size / 2
-	trigger.add_child(collision)
-
-	# 连接信号
-	trigger.body_entered.connect(_on_door_entered.bind(direction, target_room_id))
-
-	add_child(trigger)
-	_door_triggers.append(trigger)
-
-## 玩家进入门触发器
-func _on_door_entered(body: Node2D, direction: String, target_room_id: String) -> void:
-	if _is_transitioning:
-		return
-	if not body is Player:
-		return
-
-	print("[OpenWorldLevel] 玩家进入门: %s -> %s" % [direction, target_room_id])
-
-	# 淡出过渡
-	_is_transitioning = true
-	await SceneTransition._fade_out(0.2)
-
-	# 进入新房间
-	var entry_dir = RoomTransitionController.opposite_direction(direction)
-	_enter_room(target_room_id, entry_dir)
-
-	# 淡入
-	await SceneTransition._fade_in(0.2)
-
-# ============================================================
-# 房间内容生成
-# ============================================================
-
-## 生成房间内的敌人和资源
-func _spawn_room_content(room: RoomData) -> void:
-	# 清除当前场景中的敌人
-	_clear_enemies()
-
-	# 如果房间已清除，不再生成
-	if room.is_cleared:
-		return
-
+## 生成所有实体
+func _spawn_all_entities() -> void:
 	# 生成敌人
-	for enemy_config in room.enemies:
-		var enemy_id = enemy_config.get("enemy_id", "")
-		var count = enemy_config.get("count", 1)
-		for i in range(count):
-			var spawn_pos = _get_random_room_position()
-			var enemy = EnemySpawner.spawn_enemy(enemy_id, spawn_pos)
-			# 精英死亡后揭示隐藏房间
-			if enemy and enemy.has_signal("died"):
-				enemy.died.connect(_on_enemy_died.bind(room))
-			# Boss信号连接
-			if enemy and enemy is BossEnemy:
-				_connect_boss_signals(enemy)
+	_spawn_all_enemies()
 
 	# 生成资源
-	for res_config in room.resources:
-		var amount = res_config.get("amount", 1)
-		for i in range(amount):
-			var spawn_pos = _get_random_room_position()
-			_create_resource_pickup(res_config, spawn_pos)
+	_spawn_all_resources()
 
-	# 如果是撤离点，生成撤离点实体
-	if room.has_extraction_point:
-		var center = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
-		_create_extraction_entity(center)
+	# 生成NPC
+	_spawn_all_npcs()
 
-	# 如果是NPC事件房间，生成NPC
-	if room.has_npc:
-		var center = Vector2(RoomData.ROOM_WIDTH / 2.0, RoomData.ROOM_HEIGHT / 2.0)
-		_create_npc_entity(room, center)
+	# 生成撤离点
+	_spawn_all_extract_points()
 
-## 敌人死亡回调（用于揭示隐藏房间）
-func _on_enemy_died(room: RoomData) -> void:
-	# 检查房间是否全部清除
-	var enemies_alive = get_tree().get_nodes_in_group("enemies")
-	if enemies_alive.size() <= 1:  # 最后一个敌人
-		room.mark_cleared()
-		# 检查是否有相邻的隐藏房间
-		_reveal_adjacent_secrets(room)
+	# 生成Boss
+	_spawn_boss()
 
-## 揭示相邻的隐藏房间
-func _reveal_adjacent_secrets(room: RoomData) -> void:
-	for conn_id in room.connections:
-		if conn_id not in _rooms:
+## 生成所有敌人
+func _spawn_all_enemies() -> void:
+	for zone_id in _zones:
+		var zone = _zones[zone_id]
+		if zone.type == 0 or zone.type == 5:
+			continue  # 出生点和撤离点不生成敌人
+
+		for enemy_config in zone.enemies:
+			var enemy_id = enemy_config.get("enemy_id", "")
+			var count = enemy_config.get("count", 0)
+			if enemy_id == "" or count <= 0:
+				continue
+
+			for i in range(count):
+				var spawn_pos = zone.get_random_position()
+				var enemy = EnemySpawner.spawn_enemy(enemy_id, spawn_pos)
+				if enemy:
+					_active_enemies.append(enemy)
+					# 连接死亡信号
+					if enemy.has_signal("died"):
+						enemy.died.connect(_on_enemy_died.bind(enemy, zone))
+					# Boss信号连接
+					if enemy is BossEnemy:
+						_connect_boss_signals(enemy)
+
+## 生成所有资源
+func _spawn_all_resources() -> void:
+	for zone_id in _zones:
+		var zone = _zones[zone_id]
+		for res_config in zone.resources:
+			var amount = res_config.get("amount", 1)
+			for i in range(amount):
+				var spawn_pos = zone.get_random_position()
+				_create_resource_pickup(res_config, spawn_pos)
+
+## 生成所有NPC
+func _spawn_all_npcs() -> void:
+	for zone_id in _zones:
+		var zone = _zones[zone_id]
+		if not zone.has_npc:
 			continue
-		var connected_room: RoomData = _rooms[conn_id]
-		if connected_room.type == RoomData.RoomType.SECRET and not connected_room.is_secret_visible:
-			connected_room.is_secret_visible = true
-			# 创建通往隐藏房间的门
-			var direction = room.get_direction_to(connected_room)
-			_create_single_door_trigger(direction, conn_id)
-			print("[OpenWorldLevel] 隐藏房间已揭示: %s" % conn_id)
+		_create_npc_entity(zone, zone.center)
 
-## 创建NPC实体
-func _create_npc_entity(room: RoomData, pos: Vector2) -> void:
-	var npc = Area2D.new()
-	npc.position = pos
-	npc.collision_layer = 0
-	npc.collision_mask = 1
+## 生成所有撤离点
+func _spawn_all_extract_points() -> void:
+	for zone_id in _zones:
+		var zone = _zones[zone_id]
+		if not zone.has_extraction_point:
+			continue
+		_create_extraction_entity(zone.center, zone)
 
-	var sprite = ColorRect.new()
-	sprite.size = Vector2(20, 30)
-	sprite.position = Vector2(-10, -30)
-	sprite.color = Color(0.8, 0.6, 0.2)
-	npc.add_child(sprite)
+## 生成Boss
+func _spawn_boss() -> void:
+	var boss_id = _map_generator._get_boss_id()
+	var boss_pos = _map_data.boss_position
+	var boss = EnemySpawner.spawn_enemy(boss_id, boss_pos)
+	if boss:
+		_boss_entity = boss
+		_active_enemies.append(boss)
+		if boss.has_signal("died"):
+			boss.died.connect(_on_boss_died)
+		if boss is BossEnemy:
+			_connect_boss_signals(boss)
 
-	var collision = CollisionShape2D.new()
-	var shape = RectangleShape2D.new()
-	shape.size = Vector2(20, 30)
-	collision.shape = shape
-	npc.add_child(collision)
+# ============================================================
+# 敌人管理
+# ============================================================
 
-	var label = Label.new()
-	label.text = "NPC"
-	label.position = Vector2(-15, -50)
-	label.add_theme_font_size_override("font_size", 12)
-	npc.add_child(label)
+## 敌人死亡回调
+func _on_enemy_died(enemy: Node2D, zone) -> void:
+	_active_enemies.erase(enemy)
 
-	npc.body_entered.connect(_on_npc_entered.bind(room))
-	add_child(npc)
+	# 检查区域是否全部清除
+	var zone_enemies_alive = 0
+	for e in _active_enemies:
+		if is_instance_valid(e) and zone.contains_point(e.position):
+			zone_enemies_alive += 1
 
-## 玩家进入NPC区域
-func _on_npc_entered(body: Node2D, room: RoomData) -> void:
-	if not body is Player:
-		return
-	# 根据模板ID确定NPC类型
-	var template_id = room.template_id
-	if "merchant" in template_id:
-		NPCInteractionSystem.start_dialogue("merchant_%d" % GameManager.current_layer)
-	elif "mystic" in template_id or "spirit" in template_id:
-		NPCInteractionSystem.start_dialogue("mystic_%d" % GameManager.current_layer)
-	elif "trapped" in template_id:
-		NPCInteractionSystem.rescue_cultivator("trapped_%d" % GameManager.current_layer)
+	if zone_enemies_alive <= 0:
+		zone.mark_cleared()
+		print("[OpenWorldLevel] 区域已清除: %s (%s)" % [zone.id, zone.get_type_name()])
 
-## 清除场景中的敌人
-func _clear_enemies() -> void:
-	var enemies = get_tree().get_nodes_in_group("enemies")
-	for enemy in enemies:
-		enemy.queue_free()
-	_hide_boss_ui()
-
-## 连接Boss信号到UI
+## Boss信号连接
 func _connect_boss_signals(boss: BossEnemy) -> void:
-	boss.phase_changed.connect(_on_boss_phase_changed)
-	boss.boss_announcement.connect(_on_boss_announcement)
-	boss.died.connect(_on_boss_died)
+	if not boss.phase_changed.is_connected(_on_boss_phase_changed):
+		boss.phase_changed.connect(_on_boss_phase_changed)
+	if not boss.boss_announcement.is_connected(_on_boss_announcement):
+		boss.boss_announcement.connect(_on_boss_announcement)
+	if not boss.died.is_connected(_on_boss_died):
+		boss.died.connect(_on_boss_died)
 	# 显示Boss血条
 	_show_boss_health_bar(boss)
 
@@ -348,7 +264,7 @@ func _on_boss_phase_changed(new_phase: int, phase_name: String) -> void:
 	if _boss_health_bar:
 		_boss_health_bar.update_phase(phase_name)
 
-## Boss公告回调 - 显示在屏幕中央
+## Boss公告回调
 func _on_boss_announcement(text: String) -> void:
 	if not _boss_announcement_label:
 		_boss_announcement_label = Label.new()
@@ -376,14 +292,11 @@ func _on_boss_announcement(text: String) -> void:
 ## Boss死亡回调
 func _on_boss_died() -> void:
 	_hide_boss_ui()
+	print("[OpenWorldLevel] Boss已被击败！")
 
-## 获取房间内的随机位置
-func _get_random_room_position() -> Vector2:
-	var margin = 80.0
-	return Vector2(
-		randf_range(margin, RoomData.ROOM_WIDTH - margin),
-		randf_range(margin, RoomData.ROOM_HEIGHT - margin)
-	)
+# ============================================================
+# 资源拾取
+# ============================================================
 
 ## 创建资源拾取物
 func _create_resource_pickup(res_config: Dictionary, pos: Vector2) -> void:
@@ -403,6 +316,12 @@ func _create_resource_pickup(res_config: Dictionary, pos: Vector2) -> void:
 			sprite.color = Color(0.2, 0.8, 0.2)
 		"ore":
 			sprite.color = Color(0.6, 0.4, 0.2)
+		"chest":
+			sprite.color = Color(0.8, 0.6, 0.2)
+		"fire_crystal":
+			sprite.color = Color(0.9, 0.3, 0.1)
+		"gear":
+			sprite.color = Color(0.5, 0.5, 0.6)
 		_:
 			sprite.color = Color(0.5, 0.5, 0.5)
 	resource.add_child(sprite)
@@ -419,6 +338,7 @@ func _create_resource_pickup(res_config: Dictionary, pos: Vector2) -> void:
 
 	resource.body_entered.connect(_on_resource_collected.bind(resource))
 	add_child(resource)
+	_active_resources.append(resource)
 
 ## 资源被收集
 func _on_resource_collected(body: Node2D, resource: Node2D) -> void:
@@ -430,10 +350,60 @@ func _on_resource_collected(body: Node2D, resource: Node2D) -> void:
 		"amount": resource.get_meta("amount", 1),
 	}
 	if GameManager.add_to_inventory(item):
+		_active_resources.erase(resource)
 		resource.queue_free()
 
+# ============================================================
+# NPC交互
+# ============================================================
+
+## 创建NPC实体
+func _create_npc_entity(zone, pos: Vector2) -> void:
+	var npc = Area2D.new()
+	npc.position = pos
+	npc.collision_layer = 0
+	npc.collision_mask = 1
+
+	var sprite = ColorRect.new()
+	sprite.size = Vector2(20, 30)
+	sprite.position = Vector2(-10, -30)
+	sprite.color = Color(0.8, 0.6, 0.2)
+	npc.add_child(sprite)
+
+	var collision = CollisionShape2D.new()
+	var shape = RectangleShape2D.new()
+	shape.size = Vector2(20, 30)
+	collision.shape = shape
+	npc.add_child(collision)
+
+	var label = Label.new()
+	label.text = "NPC"
+	label.position = Vector2(-15, -50)
+	label.add_theme_font_size_override("font_size", 12)
+	npc.add_child(label)
+
+	npc.body_entered.connect(_on_npc_entered.bind(zone))
+	add_child(npc)
+	_active_npcs.append(npc)
+
+## 玩家进入NPC区域
+func _on_npc_entered(body: Node2D, zone) -> void:
+	if not body is Player:
+		return
+	match zone.npc_type:
+		"merchant":
+			NPCInteractionSystem.start_dialogue("merchant_%d" % GameManager.current_layer)
+		"mystic":
+			NPCInteractionSystem.start_dialogue("mystic_%d" % GameManager.current_layer)
+		"trapped_cultivator":
+			NPCInteractionSystem.rescue_cultivator("trapped_%d" % GameManager.current_layer)
+
+# ============================================================
+# 撤离点
+# ============================================================
+
 ## 创建撤离点实体
-func _create_extraction_entity(pos: Vector2) -> void:
+func _create_extraction_entity(pos: Vector2, zone) -> void:
 	var extract = Area2D.new()
 	extract.position = pos
 	extract.collision_layer = 8
@@ -457,13 +427,14 @@ func _create_extraction_entity(pos: Vector2) -> void:
 	label.add_theme_font_size_override("font_size", 14)
 	extract.add_child(label)
 
-	extract.body_entered.connect(_on_extract_entered.bind(extract))
+	extract.body_entered.connect(_on_extract_entered.bind(extract, zone))
 	add_child(extract)
+	_extract_entities.append(extract)
 
 ## 撤离点交互
-func _on_extract_entered(body: Node2D, _extract: Node2D) -> void:
+func _on_extract_entered(body: Node2D, _extract: Node2D, zone) -> void:
 	if body is Player:
-		print("[OpenWorldLevel] 到达撤离点")
+		print("[OpenWorldLevel] 到达撤离点: %s" % zone.id)
 		GameManager.victory()
 
 # ============================================================
@@ -482,8 +453,60 @@ func _on_player_died() -> void:
 # ============================================================
 
 func _physics_process(_delta: float) -> void:
+	# 更新当前区域
+	_update_current_zone()
+
 	# 更新撤离点指示器
 	_update_extract_indicator()
+
+	# 管理敌人AI激活状态
+	_manage_enemy_activation()
+
+## 更新当前区域
+func _update_current_zone() -> void:
+	if not player:
+		return
+
+	var new_zone = _map_generator.get_zone_at_position(player.position)
+	if new_zone != _current_zone:
+		var old_zone = _current_zone
+		_current_zone = new_zone
+
+		if new_zone:
+			new_zone.enter()
+			FogSystem.enter_zone(new_zone.id)
+
+			# 更新 HUD 区域信息
+			if hud:
+				hud.update_zone_info(new_zone)
+
+			# 显示区域进入动画
+			_show_zone_enter_animation(new_zone)
+		else:
+			# 离开所有区域
+			if hud:
+				hud.hide_zone_info()
+
+## 管理敌人AI激活状态
+func _manage_enemy_activation() -> void:
+	if not player:
+		return
+
+	var player_pos = player.position
+	var activation_range = 800.0
+	var deactivation_range = 1200.0
+
+	for enemy in _active_enemies:
+		if not is_instance_valid(enemy):
+			continue
+
+		var dist = player_pos.distance_to(enemy.position)
+		if dist < activation_range:
+			enemy.set_process(true)
+			enemy.set_physics_process(true)
+		elif dist > deactivation_range:
+			enemy.set_process(false)
+			enemy.set_physics_process(false)
 
 # ============================================================
 # 撤离点方向指示器
@@ -513,54 +536,157 @@ func _create_extract_indicator() -> void:
 	_extract_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.8))
 	_extract_indicator.add_child(_extract_label)
 
+## 创建指南针
+func _create_compass() -> void:
+	_compass = preload("res://scripts/ui/compass.gd").new()
+	_compass.name = "Compass"
+	_compass.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	if hud:
+		hud.add_child(_compass)
+	else:
+		add_child(_compass)
+
+	# 初始化指南针
+	if player:
+		_compass.initialize(player)
+
+	# 设置兴趣点数据
+	_setup_compass_poi()
+
+## 设置指南针兴趣点数据
+func _setup_compass_poi() -> void:
+	if not _compass:
+		return
+
+	var poi_data: Array[Dictionary] = []
+
+	# 添加 Boss 位置
+	poi_data.append({
+		"type": "boss",
+		"position": _map_data.boss_position,
+		"color": Color(1.0, 0.3, 0.3),
+	})
+
+	# 添加撤离点位置
+	for extract_pos in _map_data.extract_positions:
+		poi_data.append({
+			"type": "extract",
+			"position": extract_pos,
+			"color": Color(0.2, 0.8, 0.8),
+		})
+
+	# 添加 NPC 位置
+	for zone_id in _zones:
+		var zone = _zones[zone_id]
+		if zone.has_npc:
+			poi_data.append({
+				"type": "npc",
+				"position": zone.center,
+				"color": Color(0.9, 0.8, 0.3),
+			})
+
+	_compass.set_poi_data(poi_data)
+
+## 创建区域进入动画标签
+func _create_zone_enter_label() -> void:
+	_zone_enter_label = Label.new()
+	_zone_enter_label.name = "ZoneEnterLabel"
+	_zone_enter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_zone_enter_label.add_theme_font_size_override("font_size", 28)
+	_zone_enter_label.add_theme_color_override("font_color", Color.WHITE)
+	_zone_enter_label.z_index = 150
+	_zone_enter_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_zone_enter_label.offset_top = 200
+	_zone_enter_label.visible = false
+
+	if hud:
+		hud.add_child(_zone_enter_label)
+	else:
+		add_child(_zone_enter_label)
+
+## 显示区域进入动画
+func _show_zone_enter_animation(zone) -> void:
+	if not _zone_enter_label:
+		return
+
+	# 停止之前的动画
+	if _zone_enter_tween and _zone_enter_tween.is_valid():
+		_zone_enter_tween.kill()
+
+	# 设置文本
+	_zone_enter_label.text = zone.get_type_name()
+	_zone_enter_label.visible = true
+	_zone_enter_label.modulate.a = 0.0
+	_zone_enter_label.scale = Vector2(0.8, 0.8)
+
+	# 设置颜色
+	var color = Color.WHITE
+	match zone.type:
+		1:
+			color = Color(0.9, 0.5, 0.2)
+		2:
+			color = Color(0.3, 0.7, 0.4)
+		3:
+			color = Color(0.9, 0.3, 0.3)
+		4:
+			color = Color(1.0, 0.2, 0.2)
+		5:
+			color = Color(0.2, 0.7, 0.9)
+		6:
+			color = Color(0.9, 0.8, 0.3)
+	_zone_enter_label.add_theme_color_override("font_color", color)
+
+	# 播放动画
+	_zone_enter_tween = create_tween()
+	_zone_enter_tween.tween_property(_zone_enter_label, "modulate:a", 1.0, 0.3)
+	_zone_enter_tween.parallel().tween_property(_zone_enter_label, "scale", Vector2(1.0, 1.0), 0.3)
+	_zone_enter_tween.tween_interval(1.0)
+	_zone_enter_tween.tween_property(_zone_enter_label, "modulate:a", 0.0, 0.5)
+	_zone_enter_tween.tween_callback(func(): _zone_enter_label.visible = false)
+
 func _update_extract_indicator() -> void:
 	if not _extract_indicator or not player:
 		return
 
-	# 查找当前房间的撤离点连接
-	var room = _rooms.get(_current_room_id)
-	if not room:
+	# 找到最近的撤离点
+	var nearest_extract: Node2D = null
+	var nearest_dist = 999999.0
+
+	for extract in _extract_entities:
+		if not is_instance_valid(extract):
+			continue
+		var dist = player.position.distance_to(extract.position)
+		if dist < nearest_dist:
+			nearest_dist = dist
+			nearest_extract = extract
+
+	if not nearest_extract:
 		_extract_indicator.visible = false
 		return
 
-	# 找到最近的撤离点房间
-	var extract_room_id = _find_nearest_extract_room()
-	if extract_room_id == "":
-		_extract_indicator.visible = false
-		return
-
-	# 撤离点在屏幕内时不显示
-	var extract_room: RoomData = _rooms[extract_room_id]
-	var dir = room.get_direction_to(extract_room) if room.is_adjacent_to(extract_room) else ""
-	if dir != "":
-		# 相邻房间的撤离点，通过门方向指示
-		_show_direction_indicator(dir)
-	else:
-		# 非相邻房间，隐藏指示器
-		_extract_indicator.visible = false
-
-func _find_nearest_extract_room() -> String:
-	for room_id in _rooms:
-		var room: RoomData = _rooms[room_id]
-		if room.has_extraction_point:
-			return room_id
-	return ""
-
-func _show_direction_indicator(direction: String) -> void:
-	_extract_indicator.visible = true
+	# 计算方向
+	var dir = (nearest_extract.position - player.position).normalized()
 	var viewport_size = get_viewport().get_visible_rect().size
-	var arrow_pos: Vector2
 
-	match direction:
-		"north":
-			arrow_pos = Vector2(viewport_size.x / 2, INDICATOR_MARGIN)
-		"south":
-			arrow_pos = Vector2(viewport_size.x / 2, viewport_size.y - INDICATOR_MARGIN)
-		"east":
-			arrow_pos = Vector2(viewport_size.x - INDICATOR_MARGIN, viewport_size.y / 2)
-		"west":
-			arrow_pos = Vector2(INDICATOR_MARGIN, viewport_size.y / 2)
+	# 计算屏幕边缘位置
+	var screen_center = viewport_size / 2
+	var arrow_pos = screen_center + dir * (viewport_size.x * 0.4)
 
+	# 限制在屏幕内
+	arrow_pos.x = clampf(arrow_pos.x, INDICATOR_MARGIN, viewport_size.x - INDICATOR_MARGIN)
+	arrow_pos.y = clampf(arrow_pos.y, INDICATOR_MARGIN, viewport_size.y - INDICATOR_MARGIN)
+
+	_extract_indicator.visible = true
 	_extract_arrow.position = arrow_pos - Vector2(10, 10)
 	_extract_label.position = arrow_pos + Vector2(15, -8)
-	_extract_label.text = "撤离点 →"
+
+	# 显示距离
+	var dist_text = ""
+	if nearest_dist < 100:
+		dist_text = "撤离点 (就在附近!)"
+	elif nearest_dist < 500:
+		dist_text = "撤离点 (%dm)" % int(nearest_dist / 10)
+	else:
+		dist_text = "撤离点 →"
+	_extract_label.text = dist_text
