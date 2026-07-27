@@ -144,21 +144,29 @@ func _update_extract_indicator() -> void:
 	var viewport_size = get_viewport().get_visible_rect().size
 	var screen_center = viewport_size / 2
 	
-	# 检查撤离点是否在屏幕内
-	var camera_pos = camera.global_position if camera else player.position
+	# 获取摄像机位置（如果没有摄像机，使用玩家位置）
+	var camera_pos = Vector2.ZERO
+	if camera and camera is Camera2D:
+		camera_pos = camera.global_position
+	else:
+		camera_pos = player.position
+	
+	# 计算撤离点在屏幕上的位置
 	var extract_screen_pos = nearest_extract - camera_pos + screen_center
 	
+	# 检查撤离点是否在屏幕内（增加边距）
+	var margin = 50.0
 	var is_on_screen = (
-		extract_screen_pos.x > 0 and
-		extract_screen_pos.x < viewport_size.x and
-		extract_screen_pos.y > 0 and
-		extract_screen_pos.y < viewport_size.y
+		extract_screen_pos.x > margin and
+		extract_screen_pos.x < viewport_size.x - margin and
+		extract_screen_pos.y > margin and
+		extract_screen_pos.y < viewport_size.y - margin
 	)
 	
-	# 调试日志（每100帧输出一次）
-	if Engine.get_process_frames() % 100 == 0:
-		print("[Indicator] 玩家位置: %s, 最近撤离点: %s, 距离: %.0f, 屏幕内: %s" % [
-			str(player.position), str(nearest_extract), nearest_dist, str(is_on_screen)
+	# 调试日志（每60帧输出一次）
+	if Engine.get_process_frames() % 60 == 0:
+		print("[Indicator] 玩家: %s, 摄像机: %s, 撤离点: %s, 屏幕位置: %s, 在屏幕内: %s" % [
+			str(player.position), str(camera_pos), str(nearest_extract), str(extract_screen_pos), str(is_on_screen)
 		])
 	
 	if is_on_screen:
@@ -169,8 +177,8 @@ func _update_extract_indicator() -> void:
 	# 在屏幕外，显示指示器
 	_extract_indicator.visible = true
 	
-	# 计算方向
-	var direction = (nearest_extract - player.position).normalized()
+	# 计算方向（从屏幕中心指向撤离点）
+	var direction = (extract_screen_pos - screen_center).normalized()
 	
 	# 计算箭头位置（屏幕边缘）
 	var arrow_pos = Vector2.ZERO
@@ -180,7 +188,7 @@ func _update_extract_indicator() -> void:
 	# 设置箭头位置
 	_extract_arrow.position = arrow_pos - Vector2(10, 10)
 	
-	# 设置箭头旋转
+	# 设置箭头旋转（指向撤离点方向）
 	_extract_arrow.rotation = direction.angle()
 	
 	# 设置标签位置
