@@ -52,6 +52,28 @@ text = "灵草: 0"
 layout_mode = 2
 text = "矿石: 0"
 
+[node name="ExploreButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 120.0
+offset_right = 100.0
+offset_bottom = 170.0
+text = "世界探索"
+
+[node name="EquipmentButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 180.0
+offset_right = 100.0
+offset_bottom = 230.0
+text = "装备"
+
 [node name="BuildingGrid" type="GridContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -60,7 +82,7 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -300.0
-offset_top = -200.0
+offset_top = -150.0
 offset_right = 300.0
 offset_bottom = 200.0
 columns = 3
@@ -100,16 +122,3 @@ text = "商店"
 [node name="TreasureVault" type="Button" parent="BuildingGrid"]
 layout_mode = 2
 text = "宝库"
-
-[node name="BackButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -50.0
-offset_top = -60.0
-offset_right = 50.0
-offset_bottom = -20.0
-text = "返回"

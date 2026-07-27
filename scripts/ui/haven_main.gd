@@ -3,6 +3,8 @@
 extends Control
 
 # 建筑按钮引用
+@onready var explore_btn: Button = $ExploreButton
+@onready var equipment_btn: Button = $EquipmentButton
 @onready var alchemy_furnace_btn: Button = $BuildingGrid/AlchemyFurnace
 @onready var forge_btn: Button = $BuildingGrid/Forge
 @onready var training_room_btn: Button = $BuildingGrid/TrainingRoom
@@ -12,7 +14,6 @@ extends Control
 @onready var portal_btn: Button = $BuildingGrid/Portal
 @onready var shop_btn: Button = $BuildingGrid/Shop
 @onready var treasure_vault_btn: Button = $BuildingGrid/TreasureVault
-@onready var back_btn: Button = $BackButton
 
 # 资源显示
 @onready var spirit_stone_label: Label = $Resources/SpiritStone
@@ -21,6 +22,8 @@ extends Control
 
 func _ready() -> void:
 	# 连接按钮信号
+	explore_btn.pressed.connect(_on_explore_pressed)
+	equipment_btn.pressed.connect(_on_equipment_pressed)
 	alchemy_furnace_btn.pressed.connect(_on_building_pressed.bind("alchemy_furnace"))
 	forge_btn.pressed.connect(_on_building_pressed.bind("forge"))
 	training_room_btn.pressed.connect(_on_building_pressed.bind("training_room"))
@@ -30,7 +33,6 @@ func _ready() -> void:
 	portal_btn.pressed.connect(_on_building_pressed.bind("portal"))
 	shop_btn.pressed.connect(_on_building_pressed.bind("shop"))
 	treasure_vault_btn.pressed.connect(_on_building_pressed.bind("treasure_vault"))
-	back_btn.pressed.connect(_on_back_pressed)
 	
 	# 更新资源显示
 	_update_resources()
@@ -40,6 +42,16 @@ func _update_resources() -> void:
 	spirit_stone_label.text = "灵石: %d" % GameManager.storage.get("spirit_stone", 0)
 	herb_label.text = "灵草: %d" % GameManager.storage.get("herb", 0)
 	ore_label.text = "矿石: %d" % GameManager.storage.get("ore", 0)
+
+## 世界探索按钮
+func _on_explore_pressed() -> void:
+	print("[HavenMain] 进入世界探索")
+	get_tree().change_scene_to_file("res://scenes/levels/open_world.tscn")
+
+## 装备按钮
+func _on_equipment_pressed() -> void:
+	print("[HavenMain] 打开装备界面")
+	get_tree().change_scene_to_file("res://scenes/ui/equipment_panel.tscn")
 
 ## 建筑按钮点击
 func _on_building_pressed(building_id: String) -> void:
@@ -65,7 +77,3 @@ func _on_building_pressed(building_id: String) -> void:
 			get_tree().change_scene_to_file("res://scenes/ui/shop_panel.tscn")
 		"treasure_vault":
 			get_tree().change_scene_to_file("res://scenes/ui/vault_panel.tscn")
-
-## 返回按钮
-func _on_back_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/levels/open_world.tscn")

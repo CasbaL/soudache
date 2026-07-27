@@ -134,6 +134,6 @@ func _on_select_pressed() -> void:
 	print("[FactionSelect] 选择门派: %s" % selected_faction)
 	FactionSystem.select_faction(selected_faction)
 	
-	# 跳转到开放世界场景
-	print("[FactionSelect] 跳转到 open_world.tscn")
-	get_tree().change_scene_to_file("res://scenes/levels/open_world.tscn")
+	# 跳转到洞府主界面
+	print("[FactionSelect] 跳转到 haven_main.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/haven_main.tscn")
