@@ -259,16 +259,19 @@ func _assign_templates() -> void:
 		if room.type == _RoomDataScript.RoomType.START:
 			room.template_id = "start"
 			room.layer_theme = _RoomTemplatesScript.get_layer_theme_name(_layer)
+			print("[MapGenerator] 房间 %s: START, 无敌人" % room_id)
 			continue
 		if room.type == _RoomDataScript.RoomType.BOSS:
 			room.template_id = "boss_" + _RoomTemplatesScript.get_boss_id(_layer)
 			room.enemies = [{"enemy_id": _RoomTemplatesScript.get_boss_id(_layer), "count": 1}]
 			room.difficulty = 5
 			room.layer_theme = _RoomTemplatesScript.get_layer_theme_name(_layer)
+			print("[MapGenerator] 房间 %s: BOSS, 敌人: %s" % [room_id, room.enemies])
 			continue
 
 		var template = _RoomTemplatesScript.pick_random_template(_layer, room.type)
 		if template.is_empty():
+			print("[MapGenerator] 警告: 房间 %s 类型 %d 没有模板，使用COMBAT" % [room_id, room.type])
 			template = _RoomTemplatesScript.pick_random_template(_layer, _RoomDataScript.RoomType.COMBAT)
 
 		room.template_id = template.get("id", "")
@@ -293,6 +296,8 @@ func _assign_templates() -> void:
 					"name": r.get("name", ""),
 					"amount": amount
 				})
+
+		print("[MapGenerator] 房间 %s: %s, 模板: %s, 敌人: %d, 资源: %d" % [room_id, room.get_type_name(), room.template_id, room.enemies.size(), room.resources.size()])
 
 # ============================================================
 # 步骤5：验证可达性（BFS）

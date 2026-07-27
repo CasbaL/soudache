@@ -115,9 +115,11 @@ func clear_room() -> void:
 
 func _spawn_room_enemies(room: RoomData) -> void:
 	if _enemy_container == null:
+		print("[RoomManager] 敌人容器为空，跳过生成")
 		return
 
 	var center = Vector2(RoomData.ROOM_WIDTH / 2, RoomData.ROOM_HEIGHT / 2)
+	print("[RoomManager] 生成敌人，房间 %s 有 %d 个敌人配置" % [room.id, room.enemies.size()])
 
 	for enemy_config in room.enemies:
 		var enemy_id = enemy_config.get("enemy_id", "")
@@ -125,6 +127,7 @@ func _spawn_room_enemies(room: RoomData) -> void:
 		if enemy_id == "" or count <= 0:
 			continue
 
+		print("[RoomManager] 生成 %d 个 %s" % [count, enemy_id])
 		for i in range(count):
 			var spawn_pos = center + Vector2(
 				randf_range(-ENEMY_SPREAD_X, ENEMY_SPREAD_X),
@@ -137,6 +140,9 @@ func _spawn_room_enemies(room: RoomData) -> void:
 				# 连接死亡信号
 				if enemy.has_signal("died"):
 					enemy.died.connect(_on_enemy_died.bind(enemy))
+				print("[RoomManager] 成功生成敌人: %s" % enemy_id)
+			else:
+				print("[RoomManager] 生成敌人失败: %s" % enemy_id)
 
 ## 敌人死亡回调
 func _on_enemy_died(enemy: Node2D) -> void:
@@ -182,9 +188,11 @@ func _check_all_cleared() -> void:
 
 func _spawn_room_resources(room: RoomData) -> void:
 	if _resource_container == null:
+		print("[RoomManager] 资源容器为空，跳过生成")
 		return
 
 	var center = Vector2(RoomData.ROOM_WIDTH / 2, RoomData.ROOM_HEIGHT / 2)
+	print("[RoomManager] 生成资源，房间 %s 有 %d 个资源配置" % [room.id, room.resources.size()])
 
 	for res_config in room.resources:
 		var resource_id = res_config.get("resource_id", "")
@@ -193,6 +201,7 @@ func _spawn_room_resources(room: RoomData) -> void:
 		if resource_id == "" or amount <= 0:
 			continue
 
+		print("[RoomManager] 生成资源: %s x%d" % [name_str, amount])
 		# 对于宝箱等特殊资源，生成多个
 		var spawn_count = 1
 		if resource_id in ["chest"]:
