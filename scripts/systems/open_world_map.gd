@@ -163,6 +163,14 @@ func _divide_zones() -> void:
 
 ## 获取区域类型
 func _get_zone_type(x: int, y: int, max_x: int, max_y: int) -> ZoneType:
+	# 入口区域：出生点（左上角）
+	if x == 0 and y == 0:
+		return ZoneType.SPAWN
+	
+	# 撤离点：右下角区域
+	if x >= max_x - 2 and y >= max_y - 2:
+		return ZoneType.EXTRACT
+	
 	# 中心区域：Boss
 	var center_x = max_x / 2
 	var center_y = max_y / 2
@@ -178,14 +186,6 @@ func _get_zone_type(x: int, y: int, max_x: int, max_y: int) -> ZoneType:
 		if randf() < 0.5:
 			return ZoneType.ELITE
 		return ZoneType.RESOURCE
-	
-	# 入口区域：出生点
-	if x == 0 and y == 0:
-		return ZoneType.SPAWN
-	
-	# 撤离点：右下角区域
-	if x >= max_x - 2 and y >= max_y - 2:
-		return ZoneType.EXTRACT
 	
 	# NPC区域（随机）
 	if randf() < 0.1:
