@@ -122,18 +122,26 @@ func game_over() -> void:
 		return  # 防止重复触发
 	current_state = GameState.GAME_OVER
 	game_state_changed.emit(current_state)
-	# 延迟后返回洞府
 	print("游戏结束！丢失本轮物资")
 	_handle_death()
 
-## 处理死亡：延迟后返回洞府
+## 处理死亡：慢动作 → 陨落结算 → 返回洞府
 func _handle_death() -> void:
-	# 等待死亡动画播放
-	await Engine.get_main_loop().create_timer(2.0).timeout
-	# 丢失背包中非宝库物品（资源已在战斗中消耗/掉落）
+	# 慢动作效果
+	Engine.time_scale = 0.3
+	await Engine.get_main_loop().create_timer(0.6).timeout  # 实际 0.6s，游戏内 0.18s
+	Engine.time_scale = 1.0
+
+	# 保留宝库物品，丢失其余背包
+	var lost_count := inventory.size()
+	if has_node("/root/TreasureVaultSystem"):
+		TreasureVaultSystem.process_extraction()
 	inventory.clear()
 	inventory_changed.emit()
-	# 返回洞府
+	print("陨落！丢失 %d 件物品" % lost_count)
+
+	# 等待结算界面显示后返回洞府
+	await Engine.get_main_loop().create_timer(3.0).timeout
 	SceneTransition.go_to_haven()
 
 ## 胜利（成功撤离）

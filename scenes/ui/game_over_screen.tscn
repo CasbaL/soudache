@@ -34,7 +34,7 @@ text = "击杀敌人: 0
 收集物品: 0 / 10"
 horizontal_alignment = 1
 
-[node name="RetryButton" type="Button" parent="Overlay/Panel"]
+[node name="ReturnButton" type="Button" parent="Overlay/Panel"]
 layout_mode = 2
 custom_minimum_size = Vector2(200, 50)
-text = "重试"
+text = "返回洞府"

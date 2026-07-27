@@ -291,15 +291,15 @@ func take_damage(damage: int, is_crit: bool = false) -> void:
 
 	# 直接应用伤害（防御已在攻击方计算）
 	current_health = max(0, current_health - remaining_damage)
-	
+
 	# 受伤增加大招充能
-	FactionSystem.add_ultimate_charge(actual_damage * 0.15)
-	
+	FactionSystem.add_ultimate_charge(remaining_damage * 0.15)
+
 	# 发送信号
 	health_changed.emit(current_health)
-	
+
 	# 显示伤害数字
-	show_damage_number(actual_damage, is_crit)
+	show_damage_number(remaining_damage, is_crit)
 	
 	# 播放受伤动画（如果存在）
 	if animation_player.has_animation("hurt"):
