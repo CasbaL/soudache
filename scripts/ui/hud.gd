@@ -11,6 +11,7 @@ extends CanvasLayer
 @onready var skill_2_button: Button = $SkillBar/Skill2Button
 @onready var skill_3_button: Button = $SkillBar/Skill3Button
 @onready var dodge_button: Button = $DodgeButton
+@onready var ultimate_button: Button = $UltimateButton
 @onready var pause_button: Button = $PauseButton
 @onready var joystick = $VirtualJoystick
 
@@ -23,6 +24,7 @@ func _ready() -> void:
 	skill_2_button.pressed.connect(_on_skill_2_pressed)
 	skill_3_button.pressed.connect(_on_skill_3_pressed)
 	dodge_button.pressed.connect(_on_dodge_pressed)
+	ultimate_button.pressed.connect(_on_ultimate_pressed)
 	pause_button.pressed.connect(_on_pause_pressed)
 	
 	# 连接游戏管理器信号
@@ -96,6 +98,11 @@ func _on_skill_3_pressed() -> void:
 func _on_dodge_pressed() -> void:
 	if player:
 		player.dodge()
+
+## 大招按钮按下
+func _on_ultimate_pressed() -> void:
+	if player:
+		player.use_ultimate()
 
 ## 暂停按钮按下
 func _on_pause_pressed() -> void:

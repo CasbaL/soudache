@@ -55,11 +55,18 @@ offset_right = 260.0
 offset_bottom = 60.0
 text = "技能3"
 
+[node name="UltimateButton" type="Button" parent="."]
+offset_left = 550.0
+offset_top = 1180.0
+offset_right = 700.0
+offset_bottom = 1230.0
+text = "大招"
+
 [node name="DodgeButton" type="Button" parent="."]
 offset_left = 550.0
-offset_top = 1200.0
+offset_top = 1240.0
 offset_right = 700.0
-offset_bottom = 1260.0
+offset_bottom = 1270.0
 text = "闪避"
 
 [node name="PauseButton" type="Button" parent="."]
