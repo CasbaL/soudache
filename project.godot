@@ -31,6 +31,13 @@ BuildingSystem="*res://scripts/systems/building_system.gd"
 AlchemySystem="*res://scripts/systems/alchemy_system.gd"
 CraftingSystem="*res://scripts/systems/crafting_system.gd"
 RealmSystem="*res://scripts/systems/realm_system.gd"
+TechniqueSystem="*res://scripts/systems/technique_system.gd"
+ShopSystem="*res://scripts/systems/shop_system.gd"
+PortalSystem="*res://scripts/systems/portal_system.gd"
+FarmSystem="*res://scripts/systems/farm_system.gd"
+TreasureVaultSystem="*res://scripts/systems/treasure_vault_system.gd"
+NPCInteractionSystem="*res://scripts/systems/npc_interaction_system.gd"
+CombatFeedback="*res://scripts/systems/combat_feedback.gd"
 
 [display]
 

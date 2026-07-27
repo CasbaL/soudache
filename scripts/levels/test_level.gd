@@ -51,11 +51,19 @@ var _boss_room_id: String = ""
 # ============================================================
 
 func _ready() -> void:
+	print("[TestLevel] _ready 开始")
+	
 	# 初始化游戏
 	GameManager.start_new_game()
 
 	# 初始化子系统
 	_init_subsystems()
+
+	# 检查节点引用
+	print("[TestLevel] player: %s" % str(player))
+	print("[TestLevel] enemy_container: %s" % str(enemy_container))
+	print("[TestLevel] resource_container: %s" % str(resource_container))
+	print("[TestLevel] map_renderer: %s" % str(map_renderer))
 
 	# 生成地图
 	_generate_map()
@@ -69,6 +77,23 @@ func _ready() -> void:
 
 	# 将玩家放到起始房间
 	_enter_start_room()
+	
+	# 打印房间连接信息
+	_print_room_connections()
+	
+	print("[TestLevel] _ready 完成")
+
+## 打印房间连接信息（用于调试）
+func _print_room_connections() -> void:
+	print("[TestLevel] === 房间连接信息 ===")
+	for room_id in _rooms:
+		var room = _rooms[room_id]
+		print("[TestLevel] 房间 %s (%s) 位置: %s 连接: %s" % [
+			room_id, 
+			room.get_type_name(),
+			str(room.grid_pos),
+			str(room.connections)
+		])
 
 ## 初始化子系统
 func _init_subsystems() -> void:
@@ -141,6 +166,10 @@ func _enter_start_room() -> void:
 	var start_room = _rooms.get(_start_room_id)
 	if start_room and player:
 		player.position = start_room.get_world_center()
+		
+		# 更新渲染器位置，使起始房间在视口中居中
+		if map_renderer:
+			map_renderer.position = -start_room.get_world_rect().position
 
 ## 进入指定房间
 func _enter_room(room_id: String) -> void:
@@ -198,12 +227,16 @@ func _check_room_transition() -> void:
 	# 检查是否走到门口方向
 	var margin = 30.0
 	if player_pos.x < room_rect.position.x + margin:
+		print("[TestLevel] 玩家到达西边边缘，尝试切换房间")
 		_try_transition_to("west")
 	elif player_pos.x > room_rect.end.x - margin:
+		print("[TestLevel] 玩家到达东边边缘，尝试切换房间")
 		_try_transition_to("east")
 	elif player_pos.y < room_rect.position.y + margin:
+		print("[TestLevel] 玩家到达北边边缘，尝试切换房间")
 		_try_transition_to("north")
 	elif player_pos.y > room_rect.end.y - margin:
+		print("[TestLevel] 玩家到达南边边缘，尝试切换房间")
 		_try_transition_to("south")
 
 ## 尝试向指定方向切换房间
@@ -255,6 +288,10 @@ func _place_player_at_entrance(from_direction: String) -> void:
 			player.position = Vector2(center.x, center.y + 450)
 		"north":
 			player.position = Vector2(center.x, center.y - 450)
+	
+	# 更新渲染器位置，使新房间在视口中居中
+	if map_renderer:
+		map_renderer.position = -room.get_world_rect().position
 
 # ============================================================
 # 物理更新
