@@ -1,6 +1,14 @@
 ## 游戏内UI
-## 显示血量、背包、技能等
+## 显示血量、背包、技能、大招充能等
 extends CanvasLayer
+
+# 统一UI颜色常量
+const COLOR_HEALTH_HIGH: Color = Color(0.2, 0.8, 0.2)
+const COLOR_HEALTH_MID: Color = Color(0.9, 0.8, 0.1)
+const COLOR_HEALTH_LOW: Color = Color(0.9, 0.2, 0.2)
+const COLOR_ULTIMATE: Color = Color(0.8, 0.6, 1.0)
+const COLOR_SKILL_READY: Color = Color(1.0, 1.0, 1.0)
+const COLOR_SKILL_COOLDOWN: Color = Color(0.5, 0.5, 0.5)
 
 # 节点引用
 @onready var health_bar: ProgressBar = $HealthBar
@@ -14,6 +22,10 @@ extends CanvasLayer
 @onready var ultimate_button: Button = $UltimateButton
 @onready var pause_button: Button = $PauseButton
 @onready var joystick = $VirtualJoystick
+
+# 大招充能条（动态创建）
+var ultimate_bar: ProgressBar = null
+var ultimate_label: Label = null
 
 # 玩家引用
 var player: Player = null
@@ -45,9 +57,19 @@ func initialize(player_ref: Player) -> void:
 	# 初始化背包显示
 	update_inventory()
 
+	# 创建大招充能条
+	_create_ultimate_bar()
+
 	# 连接虚拟摇杆到玩家
 	if joystick:
 		joystick.joystick_input.connect(_on_joystick_input)
+
+	# 连接大招充能信号
+	FactionSystem.ultimate_charge_changed.connect(_on_ultimate_charge_changed)
+	FactionSystem.ultimate_ready.connect(_on_ultimate_ready)
+
+	# 统一按钮样式
+	_style_buttons()
 
 ## 虚拟摇杆输入
 func _on_joystick_input(direction: Vector2) -> void:
@@ -143,3 +165,52 @@ func show_game_over() -> void:
 func show_victory() -> void:
 	# TODO: 实现胜利UI
 	print("胜利！")
+
+## 创建大招充能条
+func _create_ultimate_bar() -> void:
+	ultimate_bar = ProgressBar.new()
+	ultimate_bar.min_value = 0
+	ultimate_bar.max_value = 100
+	ultimate_bar.value = 0
+	ultimate_bar.show_percentage = false
+	ultimate_bar.custom_minimum_size = Vector2(150, 12)
+	ultimate_bar.position = Vector2(550, 1165)
+	ultimate_bar.modulate = COLOR_ULTIMATE
+	add_child(ultimate_bar)
+
+	ultimate_label = Label.new()
+	ultimate_label.text = "大招: 0%"
+	ultimate_label.add_theme_font_size_override("font_size", 12)
+	ultimate_label.add_theme_color_override("font_color", COLOR_ULTIMATE)
+	ultimate_label.position = Vector2(550, 1150)
+	add_child(ultimate_label)
+
+## 大招充能变化
+func _on_ultimate_charge_changed(current: float, maximum: float) -> void:
+	if ultimate_bar:
+		ultimate_bar.value = (current / maximum) * 100.0
+	if ultimate_label:
+		ultimate_label.text = "大招: %d%%" % int((current / maximum) * 100)
+
+## 大招就绪
+func _on_ultimate_ready() -> void:
+	if ultimate_button:
+		ultimate_button.modulate = Color(1.0, 0.8, 0.0)  # 金色高亮
+	if ultimate_label:
+		ultimate_label.text = "大招: 就绪！"
+
+## 统一按钮样式
+func _style_buttons() -> void:
+	var button_font_size = 16
+	for btn in [skill_1_button, skill_2_button, skill_3_button]:
+		btn.add_theme_font_size_override("font_size", button_font_size)
+		btn.custom_minimum_size = Vector2(80, 50)
+
+	dodge_button.add_theme_font_size_override("font_size", button_font_size)
+	dodge_button.custom_minimum_size = Vector2(150, 25)
+
+	ultimate_button.add_theme_font_size_override("font_size", button_font_size)
+	ultimate_button.custom_minimum_size = Vector2(150, 40)
+
+	pause_button.add_theme_font_size_override("font_size", 20)
+	pause_button.custom_minimum_size = Vector2(50, 30)

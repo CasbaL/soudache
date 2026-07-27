@@ -41,11 +41,22 @@ func _ready() -> void:
 	# 更新资源显示
 	_update_resources()
 
+	# 更新战斗力显示
+	_update_combat_power()
+
 ## 更新资源显示
 func _update_resources() -> void:
-	spirit_stone_label.text = "灵石: %d" % GameManager.storage.get("spirit_stone", 0)
-	herb_label.text = "灵草: %d" % GameManager.storage.get("herb", 0)
-	ore_label.text = "矿石: %d" % GameManager.storage.get("ore", 0)
+	var stone = GameManager.storage.get("spirit_stone", 0)
+	var herb = GameManager.storage.get("herb", 0)
+	var ore = GameManager.storage.get("ore", 0)
+	spirit_stone_label.text = "💎 灵石: %d" % stone
+	herb_label.text = "🌿 灵草: %d" % herb
+	ore_label.text = "⛏ 矿石: %d" % ore
+
+	# 根据数量高亮资源
+	spirit_stone_label.modulate = Color.WHITE if stone > 0 else Color(0.5, 0.5, 0.5)
+	herb_label.modulate = Color.WHITE if herb > 0 else Color(0.5, 0.5, 0.5)
+	ore_label.modulate = Color.WHITE if ore > 0 else Color(0.5, 0.5, 0.5)
 
 ## 世界探索按钮
 func _on_explore_pressed() -> void:
@@ -66,6 +77,15 @@ func _on_warehouse_pressed() -> void:
 func _on_back_pressed() -> void:
 	print("[HavenMain] 返回门派选择")
 	SceneTransition.change_scene("res://scenes/ui/faction_select.tscn")
+
+## 更新战斗力显示
+func _update_combat_power() -> void:
+	var cp = GameManager.get_combat_power()
+	var recommended = GameManager.get_recommended_layer()
+	# 在标题下方显示战斗力
+	var title = $Title
+	if title:
+		title.text = "洞府  |  战斗力: %d  |  推荐: 第%d层" % [cp, recommended]
 
 ## 建筑按钮点击
 func _on_building_pressed(building_id: String) -> void:
