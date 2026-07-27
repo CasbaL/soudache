@@ -72,3 +72,36 @@ func _get_free_sfx_player() -> AudioStreamPlayer:
 		if not player.playing:
 			return player
 	return null
+
+## 播放预加载的音效（通过路径）
+func play_sfx_by_path(path: String, volume_scale: float = 1.0) -> void:
+	if not ResourceLoader.exists(path):
+		return
+	var stream = load(path) as AudioStream
+	if stream:
+		play_sfx(stream, volume_scale)
+
+## 播放按键音效
+func play_ui_click() -> void:
+	# 使用程序生成的短促音效
+	var player = _get_free_sfx_player()
+	if player == null:
+		return
+	# 简单的点击音效（如果有的话）
+	# play_sfx_by_path("res://assets/audio/sfx/click.ogg")
+
+## 设置BGM音量（0-1）
+func set_bgm_volume(volume: float) -> void:
+	bgm_volume = clampf(volume, 0.0, 1.0)
+	bgm_player.volume_db = linear_to_db(bgm_volume)
+
+## 设置SFX音量（0-1）
+func set_sfx_volume(volume: float) -> void:
+	sfx_volume = clampf(volume, 0.0, 1.0)
+
+## 静音/取消静音
+func toggle_mute() -> void:
+	if bgm_player.volume_db > -80:
+		bgm_player.volume_db = -80
+	else:
+		bgm_player.volume_db = linear_to_db(bgm_volume)
