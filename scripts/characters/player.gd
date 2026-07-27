@@ -156,14 +156,14 @@ func find_nearest_enemy() -> Node2D:
 
 ## 攻击敌人（基础伤害计算）
 func attack_enemy(enemy: Node2D, damage_mult: float = 1.0) -> void:
-	var damage = int(attack_damage * damage_mult)
-	var is_crit = randf() < crit_rate
-	if is_crit:
-		damage = int(damage * crit_damage)
-	
+	var target_defense = enemy.get("defense") if "defense" in enemy else 0
+	var result = GameManager.calculate_damage(attack_damage, damage_mult, target_defense, crit_rate, crit_damage)
+	var damage = result.damage
+	var is_crit = result.is_crit
+
 	if enemy.has_method("take_damage"):
 		enemy.take_damage(damage, is_crit)
-	
+
 	# 攻击时增加大招充能
 	FactionSystem.add_ultimate_charge(damage * 0.1)
 	
@@ -278,20 +278,19 @@ func _get_skill_direction() -> Vector2:
 		return Vector2.LEFT
 	return Vector2.RIGHT
 
-## 受伤
+## 受伤（伤害已由攻击方通过公式计算，包含防御减免）
 func take_damage(damage: int, is_crit: bool = false) -> void:
 	if is_invincible:
 		return
-	
+
 	# 护盾吸收
 	var remaining_damage = SkillSystem.absorb_damage(self, damage)
 	if remaining_damage <= 0:
 		show_damage_number(damage, false, false, true)
 		return
-	
-	# 计算实际伤害
-	var actual_damage = max(1, remaining_damage - defense)
-	current_health = max(0, current_health - actual_damage)
+
+	# 直接应用伤害（防御已在攻击方计算）
+	current_health = max(0, current_health - remaining_damage)
 	
 	# 受伤增加大招充能
 	FactionSystem.add_ultimate_charge(actual_damage * 0.15)

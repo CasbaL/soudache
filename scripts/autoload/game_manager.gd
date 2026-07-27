@@ -182,12 +182,11 @@ func _handle_extraction() -> void:
 	await Engine.get_main_loop().create_timer(1.5).timeout
 	SceneTransition.go_to_haven()
 
-## 玩家受伤
+## 玩家受伤（伤害已由攻击方通过公式计算）
 func player_take_damage(damage: int) -> void:
-	var actual_damage = max(1, damage - player_data.defense)
-	player_data.health = max(0, player_data.health - actual_damage)
+	player_data.health = max(0, player_data.health - damage)
 	player_health_changed.emit(player_data.health)
-	
+
 	if player_data.health <= 0:
 		game_over()
 
@@ -238,6 +237,18 @@ func save_inventory_to_storage() -> void:
 	
 	print("撤离完成！仓库资源已保存，剩余背包物品: %d 件" % inventory.size())
 	inventory_changed.emit()
+
+## 统一伤害计算（百分比减伤公式）
+## 返回 { "damage": int, "is_crit": bool }
+static func calculate_damage(base_attack: int, skill_mult: float,
+							  target_defense: int, crit_rate: float,
+							  crit_damage: float) -> Dictionary:
+	var is_crit = randf() < crit_rate
+	var crit_mult = crit_damage if is_crit else 1.0
+	var defense_reduction = 1.0 - (float(target_defense) / (float(target_defense) + 100.0))
+	var raw = base_attack * skill_mult * defense_reduction * crit_mult
+	var final_damage = maxi(1, roundi(raw))
+	return {"damage": final_damage, "is_crit": is_crit}
 
 ## 计算战斗力
 func get_combat_power() -> int:
