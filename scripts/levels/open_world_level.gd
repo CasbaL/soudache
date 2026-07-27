@@ -75,12 +75,17 @@ func _place_player_at_spawn() -> void:
 
 ## 创建撤离点方向指示器
 func _create_extract_indicator() -> void:
-	# 创建指示器容器
+	# 创建指示器容器（添加到HUD上，这样它会固定在屏幕上）
 	_extract_indicator = Control.new()
 	_extract_indicator.name = "ExtractIndicator"
-	_extract_indicator.z_index = 100
+	_extract_indicator.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_extract_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_extract_indicator)
+	
+	# 添加到HUD CanvasLayer上
+	if hud:
+		hud.add_child(_extract_indicator)
+	else:
+		add_child(_extract_indicator)
 	
 	# 创建箭头
 	_extract_arrow = ColorRect.new()
@@ -93,7 +98,7 @@ func _create_extract_indicator() -> void:
 	_extract_label = Label.new()
 	_extract_label.name = "DistanceLabel"
 	_extract_label.text = "撤离点"
-	_extract_label.add_theme_font_size_override("font_size", 12)
+	_extract_label.add_theme_font_size_override("font_size", 14)
 	_extract_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.8))
 	_extract_indicator.add_child(_extract_label)
 	
