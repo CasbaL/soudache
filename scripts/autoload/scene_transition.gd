@@ -50,6 +50,14 @@ func change_scene_immediate(path: String) -> void:
 	get_tree().change_scene_to_file(path)
 	scene_changed.emit(path)
 
+## 快捷方法：返回洞府
+func go_to_haven() -> void:
+	change_scene("res://scenes/ui/haven_main.tscn")
+
+## 快捷方法：进入探索
+func go_to_explore() -> void:
+	change_scene("res://scenes/levels/open_world.tscn")
+
 ## 淡出（变黑）
 func _fade_out(duration: float) -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP  # 阻止过渡中输入

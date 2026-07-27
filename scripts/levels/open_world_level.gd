@@ -65,6 +65,8 @@ func _init_map() -> void:
 func _connect_signals() -> void:
 	if player and player.has_signal("health_changed"):
 		player.health_changed.connect(_on_player_health_changed)
+	if player and player.has_signal("died"):
+		player.died.connect(_on_player_died)
 
 ## 放置玩家到出生点
 func _place_player_at_spawn() -> void:
@@ -111,6 +113,10 @@ func _create_extract_indicator() -> void:
 func _on_player_health_changed(new_health: int) -> void:
 	if hud and player:
 		hud.update_health(new_health, player.max_health)
+
+func _on_player_died() -> void:
+	print("[OpenWorldLevel] 玩家死亡")
+	# game_manager.game_over() 已在 player.die() 中调用
 
 # ============================================================
 # 物理更新

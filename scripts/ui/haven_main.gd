@@ -50,44 +50,48 @@ func _update_resources() -> void:
 ## 世界探索按钮
 func _on_explore_pressed() -> void:
 	print("[HavenMain] 进入世界探索")
-	get_tree().change_scene_to_file("res://scenes/levels/open_world.tscn")
+	SceneTransition.go_to_explore()
 
 ## 装备按钮
 func _on_equipment_pressed() -> void:
 	print("[HavenMain] 打开装备界面")
-	get_tree().change_scene_to_file("res://scenes/ui/equipment_panel.tscn")
+	SceneTransition.change_scene("res://scenes/ui/equipment_panel.tscn")
 
 ## 仓库按钮
 func _on_warehouse_pressed() -> void:
 	print("[HavenMain] 打开仓库界面")
-	get_tree().change_scene_to_file("res://scenes/ui/warehouse_panel.tscn")
+	SceneTransition.change_scene("res://scenes/ui/warehouse_panel.tscn")
 
 ## 返回门派选择
 func _on_back_pressed() -> void:
 	print("[HavenMain] 返回门派选择")
-	get_tree().change_scene_to_file("res://scenes/ui/faction_select.tscn")
+	SceneTransition.change_scene("res://scenes/ui/faction_select.tscn")
 
 ## 建筑按钮点击
 func _on_building_pressed(building_id: String) -> void:
 	print("[HavenMain] 点击建筑: %s" % building_id)
-	
+
 	# 根据建筑ID跳转到对应界面
+	var scene_path = ""
 	match building_id:
 		"alchemy_furnace":
-			get_tree().change_scene_to_file("res://scenes/ui/alchemy_panel.tscn")
+			scene_path = "res://scenes/ui/alchemy_panel.tscn"
 		"forge":
-			get_tree().change_scene_to_file("res://scenes/ui/forge_panel.tscn")
+			scene_path = "res://scenes/ui/forge_panel.tscn"
 		"training_room":
-			get_tree().change_scene_to_file("res://scenes/ui/training_panel.tscn")
+			scene_path = "res://scenes/ui/training_panel.tscn"
 		"library":
-			get_tree().change_scene_to_file("res://scenes/ui/library_panel.tscn")
+			scene_path = "res://scenes/ui/library_panel.tscn"
 		"farm":
-			get_tree().change_scene_to_file("res://scenes/ui/farm_panel.tscn")
+			scene_path = "res://scenes/ui/farm_panel.tscn"
 		"warehouse":
-			get_tree().change_scene_to_file("res://scenes/ui/warehouse_panel.tscn")
+			scene_path = "res://scenes/ui/warehouse_panel.tscn"
 		"portal":
-			get_tree().change_scene_to_file("res://scenes/ui/portal_panel.tscn")
+			scene_path = "res://scenes/ui/portal_panel.tscn"
 		"shop":
-			get_tree().change_scene_to_file("res://scenes/ui/shop_panel.tscn")
+			scene_path = "res://scenes/ui/shop_panel.tscn"
 		"treasure_vault":
-			get_tree().change_scene_to_file("res://scenes/ui/vault_panel.tscn")
+			scene_path = "res://scenes/ui/vault_panel.tscn"
+
+	if scene_path != "":
+		SceneTransition.change_scene(scene_path)

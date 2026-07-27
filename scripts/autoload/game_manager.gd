@@ -120,8 +120,19 @@ func resume_game() -> void:
 func game_over() -> void:
 	current_state = GameState.GAME_OVER
 	game_state_changed.emit(current_state)
-	# 显示游戏结束UI
+	# 延迟后返回洞府
 	print("游戏结束！丢失本轮物资")
+	_handle_death()
+
+## 处理死亡：延迟后返回洞府
+func _handle_death() -> void:
+	# 等待死亡动画播放
+	await Engine.get_main_loop().create_timer(2.0).timeout
+	# 丢失背包中非宝库物品（资源已在战斗中消耗/掉落）
+	inventory.clear()
+	inventory_changed.emit()
+	# 返回洞府
+	SceneTransition.go_to_haven()
 
 ## 胜利（成功撤离）
 func victory() -> void:
@@ -130,6 +141,13 @@ func victory() -> void:
 	# 保存物资到仓库
 	save_inventory_to_storage()
 	print("成功撤离！物资已保存")
+	# 延迟后返回洞府
+	_handle_extraction()
+
+## 处理撤离：延迟后返回洞府
+func _handle_extraction() -> void:
+	await Engine.get_main_loop().create_timer(1.5).timeout
+	SceneTransition.go_to_haven()
 
 ## 玩家受伤
 func player_take_damage(damage: int) -> void:
