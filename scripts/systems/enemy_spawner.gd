@@ -42,37 +42,46 @@ func _build_registry() -> void:
 		
 		# 普通敌人
 		for enemy in layer.get("enemies", []):
-			_enemy_registry[enemy.id] = {
-				"data": enemy,
-				"script_path": MELEE_SCRIPT_PATH,
-				"type": "melee"
-			}
+			var enemy_id = enemy.get("id", "")
+			if enemy_id != "":
+				_enemy_registry[enemy_id] = {
+					"data": enemy,
+					"script_path": MELEE_SCRIPT_PATH,
+					"type": "melee"
+				}
 		
 		# 精英敌人
 		for elite in layer.get("elite", []):
-			_enemy_registry[elite.id] = {
-				"data": elite,
-				"script_path": ELITE_SCRIPT_PATH,
-				"type": "elite"
-			}
+			var elite_id = elite.get("id", "")
+			if elite_id != "":
+				_enemy_registry[elite_id] = {
+					"data": elite,
+					"script_path": ELITE_SCRIPT_PATH,
+					"type": "elite"
+				}
 		
 		# Boss敌人
 		var boss = layer.get("boss", {})
 		if not boss.is_empty():
-			var boss_path = BOSS_SCRIPT_PATHS.get(boss.id, "")
-			_enemy_registry[boss.id] = {
-				"data": boss,
-				"script_path": boss_path,
-				"type": "boss"
-			}
+			var boss_id = boss.get("id", "")
+			if boss_id != "":
+				var boss_path = BOSS_SCRIPT_PATHS.get(boss_id, "")
+				_enemy_registry[boss_id] = {
+					"data": boss,
+					"script_path": boss_path,
+					"type": "boss"
+				}
 	
 	# 特殊：竹妖射手用远程脚本
 	if _enemy_registry.has("bamboo_archer"):
 		_enemy_registry["bamboo_archer"].script_path = RANGED_SCRIPT_PATH
 		_enemy_registry["bamboo_archer"].type = "ranged"
+	
+	print("[EnemySpawner] 注册表构建完成，共 %d 个敌人类型" % _enemy_registry.size())
 
 ## 生成敌人
-func spawn_enemy(type_id: String, spawn_position: Vector2) -> Node2D:
+## parent: 可选的父节点，如果为空则添加到 current_scene
+func spawn_enemy(type_id: String, spawn_position: Vector2, parent: Node = null) -> Node2D:
 	if not _enemy_registry.has(type_id):
 		print("未知敌人类型: ", type_id)
 		return null
@@ -108,8 +117,11 @@ func spawn_enemy(type_id: String, spawn_position: Vector2) -> Node2D:
 	# 设置属性
 	_apply_enemy_data(enemy, data)
 	
-	# 添加到场景
-	get_tree().current_scene.add_child(enemy)
+	# 添加到指定父节点或当前场景
+	if parent:
+		parent.add_child(enemy)
+	else:
+		get_tree().current_scene.add_child(enemy)
 	
 	# 连接掉落信号
 	if enemy.has_signal("dropped_items"):
@@ -175,9 +187,11 @@ func _create_enemy_nodes(enemy: Node2D, data: Dictionary) -> void:
 	attack_timer.one_shot = true
 	enemy.add_child(attack_timer)
 	
-	# DetectArea
+	# DetectArea - 检测玩家进入范围
 	var detect_area = Area2D.new()
 	detect_area.name = "DetectArea"
+	detect_area.collision_layer = 0  # 不在任何层
+	detect_area.collision_mask = 1   # 检测第1层（玩家）
 	enemy.add_child(detect_area)
 	
 	var detect_collision = CollisionShape2D.new()
@@ -187,9 +201,11 @@ func _create_enemy_nodes(enemy: Node2D, data: Dictionary) -> void:
 	detect_collision.shape = detect_shape
 	detect_area.add_child(detect_collision)
 	
-	# AttackArea
+	# AttackArea - 检测攻击范围内的玩家
 	var attack_area = Area2D.new()
 	attack_area.name = "AttackArea"
+	attack_area.collision_layer = 0  # 不在任何层
+	attack_area.collision_mask = 1   # 检测第1层（玩家）
 	enemy.add_child(attack_area)
 	
 	var attack_collision = CollisionShape2D.new()

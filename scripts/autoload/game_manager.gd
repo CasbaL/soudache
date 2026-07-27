@@ -167,8 +167,26 @@ func remove_from_inventory(index: int) -> Dictionary:
 
 ## 保存背包到仓库（撤离时调用）
 func save_inventory_to_storage() -> void:
-	# TODO: 实现仓库系统
-	print("保存 %d 个物品到仓库" % inventory.size())
+	# 1. 将资源类物品存入仓库
+	deposit_inventory_resources()
+	
+	# 2. 处理宝库物品（完全保护）
+	if has_node("/root/TreasureVaultSystem"):
+		var vault_result = TreasureVaultSystem.process_extraction()
+		print("宝库物品已保护: %d 件" % vault_result.get("vault_items", {}).size())
+	
+	# 3. 处理剩余背包物品（非资源类，如装备）
+	# 装备会保留，但如果有宝库可以存入珍稀装备
+	if has_node("/root/TreasureVaultSystem"):
+		for i in range(inventory.size() - 1, -1, -1):
+			var item = inventory[i]
+			if TreasureVaultSystem.can_store_item(item):
+				if TreasureVaultSystem.store_item(item):
+					inventory.remove_at(i)
+					print("珍稀物品已存入宝库: %s" % item.get("name", ""))
+	
+	print("撤离完成！仓库资源已保存，剩余背包物品: %d 件" % inventory.size())
+	inventory_changed.emit()
 
 ## 计算战斗力
 func get_combat_power() -> int:

@@ -114,12 +114,21 @@ func clear_room() -> void:
 # ============================================================
 
 func _spawn_room_enemies(room: RoomData) -> void:
+	print("[RoomManager] _spawn_room_enemies 被调用，房间: %s, 类型: %s" % [room.id, room.get_type_name()])
+	
 	if _enemy_container == null:
 		print("[RoomManager] 敌人容器为空，跳过生成")
 		return
+	
+	print("[RoomManager] 敌人容器: %s" % _enemy_container.name)
+	print("[RoomManager] EnemySpawner 是否存在: %s" % str(has_node("/root/EnemySpawner")))
 
 	var center = Vector2(RoomData.ROOM_WIDTH / 2, RoomData.ROOM_HEIGHT / 2)
 	print("[RoomManager] 生成敌人，房间 %s 有 %d 个敌人配置" % [room.id, room.enemies.size()])
+	
+	# 打印敌人配置详情
+	for enemy_config in room.enemies:
+		print("[RoomManager] 敌人配置: %s" % str(enemy_config))
 
 	for enemy_config in room.enemies:
 		var enemy_id = enemy_config.get("enemy_id", "")
@@ -134,7 +143,8 @@ func _spawn_room_enemies(room: RoomData) -> void:
 				randf_range(-ENEMY_SPREAD_Y, ENEMY_SPREAD_Y)
 			)
 
-			var enemy = EnemySpawner.spawn_enemy(enemy_id, spawn_pos)
+			# 传入 _enemy_container 作为父节点
+			var enemy = EnemySpawner.spawn_enemy(enemy_id, spawn_pos, _enemy_container)
 			if enemy:
 				_active_enemies.append(enemy)
 				# 连接死亡信号

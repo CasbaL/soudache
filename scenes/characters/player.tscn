@@ -86,10 +86,14 @@ _animations = [{
 }]
 
 [node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 1
+collision_mask = 2
 
 [node name="HitboxCollision" type="CollisionShape2D" parent="Hitbox"]
 
 [node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 1
+collision_mask = 2
 
 [node name="HurtboxCollision" type="CollisionShape2D" parent="Hurtbox"]
 
