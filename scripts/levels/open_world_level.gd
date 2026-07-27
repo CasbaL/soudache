@@ -189,6 +189,7 @@ func _format_distance(distance: float) -> String:
 	if distance < 100:
 		return "%dm" % int(distance)
 	elif distance < 1000:
-		return "%dm" % int(distance / 10) * 10
+		var rounded = int(distance / 10) * 10
+		return "%dm" % rounded
 	else:
 		return "%.1fkm" % (distance / 1000)
