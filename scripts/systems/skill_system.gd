@@ -121,6 +121,14 @@ func use_skill(slot: int, caster: Node2D, direction: Vector2) -> bool:
 	# 设置冷却
 	cooldowns[skill_id] = skill.get("cooldown", 0.0)
 	
+	# 检测技能组合
+	var combo = check_combo(skill_id)
+	var damage_multiplier = 1.0
+	if not combo.is_empty():
+		print("触发组合: %s - %s" % [combo.get("name", ""), combo.get("description", "")])
+		if combo.get("effect", "") == "damage_boost":
+			damage_multiplier = combo.get("value", 1.0)
+
 	# 根据效果类型执行
 	var effect_type = skill.get("effect_type", "")
 	match effect_type:
@@ -140,7 +148,7 @@ func use_skill(slot: int, caster: Node2D, direction: Vector2) -> bool:
 	# 技能命中增加大招充能
 	var skill_damage = skill.get("damage", 0)
 	if skill_damage > 0:
-		FactionSystem.add_ultimate_charge(skill_damage * 0.05)
+		FactionSystem.add_ultimate_charge(skill_damage * damage_multiplier * 0.05)
 	
 	skill_cast.emit(skill_id, slot)
 	return true
@@ -272,3 +280,57 @@ func set_faction(faction: String) -> void:
 	if skill_data.has(faction):
 		current_faction = faction
 		cooldowns.clear()
+
+# ============================================================
+# 技能组合系统
+# ============================================================
+
+# 最近使用的技能（用于组合检测）
+var _recent_skills: Array = []
+const COMBO_WINDOW: float = 3.0  # 组合窗口时间
+
+# 组合定义：[技能A_id, 技能B_id] → 组合效果
+const COMBOS: Dictionary = {
+	"talisman_stun+sword_qi_slash": {
+		"name": "定身剑阵",
+		"description": "定身期间剑阵伤害+50%",
+		"effect": "damage_boost",
+		"value": 1.5,
+	},
+	"pill_shield+sword_fly_blade": {
+		"name": "护盾冲锋",
+		"description": "冲锋期间护盾吸收量翻倍",
+		"effect": "shield_boost",
+		"value": 2.0,
+	},
+	"talisman_thunder+talisman_fire": {
+		"name": "雷火交加",
+		"description": "水区域导电，伤害翻倍",
+		"effect": "damage_boost",
+		"value": 2.0,
+	},
+}
+
+## 记录技能使用（用于组合检测）
+func _record_skill_use(skill_id: String) -> void:
+	var now = Time.get_unix_time_from_system()
+	_recent_skills.append({"id": skill_id, "time": now})
+	# 清理过期记录
+	_recent_skills = _recent_skills.filter(func(s): return now - s.time < COMBO_WINDOW)
+
+## 检测并返回组合效果
+func check_combo(skill_id: String) -> Dictionary:
+	_record_skill_use(skill_id)
+
+	# 检查最近使用的技能是否形成组合
+	for i in range(_recent_skills.size() - 1):
+		var prev = _recent_skills[i]
+		var combo_key = prev.id + "+" + skill_id
+		if COMBOS.has(combo_key):
+			return COMBOS[combo_key]
+		# 也检查反向组合
+		var reverse_key = skill_id + "+" + prev.id
+		if COMBOS.has(reverse_key):
+			return COMBOS[reverse_key]
+
+	return {}
