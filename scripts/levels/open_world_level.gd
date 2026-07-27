@@ -155,6 +155,12 @@ func _update_extract_indicator() -> void:
 		extract_screen_pos.y < viewport_size.y
 	)
 	
+	# 调试日志（每100帧输出一次）
+	if Engine.get_process_frames() % 100 == 0:
+		print("[Indicator] 玩家位置: %s, 最近撤离点: %s, 距离: %.0f, 屏幕内: %s" % [
+			str(player.position), str(nearest_extract), nearest_dist, str(is_on_screen)
+		])
+	
 	if is_on_screen:
 		# 在屏幕内，隐藏指示器
 		_extract_indicator.visible = false
