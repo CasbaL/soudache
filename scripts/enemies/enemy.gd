@@ -3,6 +3,16 @@
 class_name Enemy
 extends CharacterBody2D
 
+# AI状态枚举
+enum AIState {
+	IDLE,       # 空闲
+	PATROL,     # 巡逻
+	CHASE,      # 追击
+	ATTACK,     # 攻击
+	RETREAT,    # 后退（远程敌人用）
+	STUNNED,    # 被定身
+}
+
 # 导出变量
 @export var enemy_name: String = "竹妖"
 @export var max_health: int = 200
@@ -24,6 +34,8 @@ extends CharacterBody2D
 var can_attack: bool = true
 var is_dead: bool = false
 var target: Node2D = null
+var current_state: AIState = AIState.IDLE
+var _stun_timer: float = 0.0
 
 # 信号
 signal health_changed(new_health: int)
@@ -53,24 +65,116 @@ func _ready() -> void:
 	# 添加到敌人组
 	add_to_group("enemies")
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
-	
-	# AI 行为
+
+	# 定身状态倒计时
+	if current_state == AIState.STUNNED:
+		_stun_timer -= delta
+		if _stun_timer <= 0:
+			_stun_timer = 0.0
+			_change_state(AIState.CHASE if target else AIState.IDLE)
+		return
+
+	# 状态机
+	match current_state:
+		AIState.IDLE:
+			_state_idle()
+		AIState.PATROL:
+			_state_patrol()
+		AIState.CHASE:
+			_state_chase()
+		AIState.ATTACK:
+			_state_attack()
+		AIState.RETREAT:
+			_state_retreat()
+
+## 切换状态
+func _change_state(new_state: AIState) -> void:
+	current_state = new_state
+
+## 空闲状态
+func _state_idle() -> void:
+	velocity = Vector2.ZERO
+	move_and_slide()
+	# 检测到目标时切换到追击
 	if target:
-		# 目标在检测范围内
-		var distance = global_position.distance_to(target.global_position)
-		
-		if distance <= attack_range:
-			# 在攻击范围内，攻击
-			attack()
-		else:
-			# 追踪目标
-			move_toward_target()
-	else:
-		# 巡逻
-		patrol()
+		_change_state(AIState.CHASE)
+
+## 巡逻状态
+func _state_patrol() -> void:
+	velocity = Vector2.ZERO
+	move_and_slide()
+	if target:
+		_change_state(AIState.CHASE)
+
+## 追击状态
+func _state_chase() -> void:
+	if not target:
+		_change_state(AIState.IDLE)
+		return
+
+	var distance = global_position.distance_to(target.global_position)
+
+	# 进入攻击范围
+	if distance <= attack_range:
+		_change_state(AIState.ATTACK)
+		return
+
+	# 目标离开感知范围（1.5倍）
+	if distance > detect_range * 1.5:
+		target = null
+		_change_state(AIState.IDLE)
+		return
+
+	# 移向目标
+	var direction = (target.global_position - global_position).normalized()
+	velocity = direction * speed
+	move_and_slide()
+	sprite.flip_h = velocity.x < 0
+
+## 攻击状态
+func _state_attack() -> void:
+	if not target:
+		_change_state(AIState.IDLE)
+		return
+
+	var distance = global_position.distance_to(target.global_position)
+
+	# 目标离开攻击范围，追击
+	if distance > attack_range * 1.2:
+		_change_state(AIState.CHASE)
+		return
+
+	# 尝试攻击
+	if can_attack:
+		attack()
+
+## 后退状态（远程敌人用）
+func _state_retreat() -> void:
+	if not target:
+		_change_state(AIState.IDLE)
+		return
+
+	var distance = global_position.distance_to(target.global_position)
+
+	# 后退到安全距离
+	if distance >= attack_range * 0.8:
+		_change_state(AIState.ATTACK)
+		return
+
+	# 远离目标
+	var direction = (global_position - target.global_position).normalized()
+	velocity = direction * speed * 0.7
+	move_and_slide()
+	sprite.flip_h = velocity.x < 0
+
+## 施加定身
+func apply_stun(duration: float) -> void:
+	current_state = AIState.STUNNED
+	_stun_timer = duration
+	velocity = Vector2.ZERO
 
 ## 移向目标
 func move_toward_target() -> void:
@@ -104,14 +208,12 @@ func attack() -> void:
 		if body is Player:
 			body.take_damage(attack_damage)
 
-## 受伤
+## 受伤（伤害已由攻击方通过公式计算）
 func take_damage(damage: int, is_crit: bool = false) -> void:
 	if is_dead:
 		return
-	
-	# 计算实际伤害
-	var actual_damage = max(1, damage - defense)
-	current_health = max(0, current_health - actual_damage)
+
+	current_health = max(0, current_health - damage)
 	
 	# 发送信号
 	health_changed.emit(current_health)
