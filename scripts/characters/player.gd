@@ -164,6 +164,10 @@ func attack_enemy(enemy: Node2D, damage_mult: float = 1.0) -> void:
 	if enemy.has_method("take_damage"):
 		enemy.take_damage(damage, is_crit)
 
+	# 暴击反馈：屏幕震动
+	if is_crit:
+		CombatFeedback.shake_on_crit()
+
 	# 攻击时增加大招充能
 	FactionSystem.add_ultimate_charge(damage * 0.1)
 	
@@ -300,7 +304,11 @@ func take_damage(damage: int, is_crit: bool = false) -> void:
 
 	# 显示伤害数字
 	show_damage_number(remaining_damage, is_crit)
-	
+
+	# 战斗反馈：受击闪红 + 屏幕震动
+	CombatFeedback.flash_hit_effect(self)
+	CombatFeedback.shake_on_hit()
+
 	# 播放受伤动画（如果存在）
 	if animation_player.has_animation("hurt"):
 		animation_player.play("hurt")

@@ -237,18 +237,24 @@ func take_damage(damage: int, is_crit: bool = false) -> void:
 func die() -> void:
 	is_dead = true
 	died.emit()
-	
+
+	# Boss死亡慢动作效果
+	if is_in_group("bosses"):
+		Engine.time_scale = 0.3
+		await Engine.get_main_loop().create_timer(0.5).timeout
+		Engine.time_scale = 1.0
+
 	# 掉落物品
 	drop_loot()
-	
+
 	# 禁用碰撞
 	set_physics_process(false)
-	
+
 	# 播放死亡动画（如果存在）
 	if animation_player.has_animation("die"):
 		animation_player.play("die")
 		await animation_player.animation_finished
-	
+
 	# 删除节点
 	queue_free.call_deferred()
 
