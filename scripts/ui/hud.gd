@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var skill_3_button: Button = $SkillBar/Skill3Button
 @onready var dodge_button: Button = $DodgeButton
 @onready var pause_button: Button = $PauseButton
+@onready var joystick = $VirtualJoystick
 
 # 玩家引用
 var player: Player = null
@@ -32,15 +33,24 @@ func _ready() -> void:
 ## 初始化
 func initialize(player_ref: Player) -> void:
 	player = player_ref
-	
+
 	# 初始化血量显示
 	update_health(player.current_health, player.max_health)
-	
+
 	# 初始化层数显示
 	update_layer(GameManager.current_layer)
-	
+
 	# 初始化背包显示
 	update_inventory()
+
+	# 连接虚拟摇杆到玩家
+	if joystick:
+		joystick.joystick_input.connect(_on_joystick_input)
+
+## 虚拟摇杆输入
+func _on_joystick_input(direction: Vector2) -> void:
+	if player:
+		player.set_joystick_input(direction)
 
 ## 更新血量显示
 func update_health(current: int, max_val: int) -> void:

@@ -33,6 +33,9 @@ var can_use_skill_3: bool = true
 # 闪避方向
 var dodge_direction: Vector2 = Vector2.ZERO
 
+# 虚拟摇杆输入
+var joystick_direction: Vector2 = Vector2.ZERO
+
 # 信号
 signal health_changed(new_health: int)
 signal died()
@@ -95,16 +98,18 @@ func _physics_process(delta: float) -> void:
 		# 闪避中，按闪避方向移动
 		velocity = dodge_direction * dodge_speed
 	else:
-		# 正常移动
-		var input_vector = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+		# 正常移动：优先使用虚拟摇杆输入，其次键盘输入
+		var input_vector = joystick_direction
+		if input_vector == Vector2.ZERO:
+			input_vector = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		velocity = input_vector * speed
-		
+
 		# 更新朝向
 		if input_vector.x != 0:
 			sprite.flip_h = input_vector.x < 0
-	
+
 	move_and_slide()
-	
+
 	# 自动攻击最近的敌人
 	if not is_dodging:
 		auto_attack(delta)
@@ -443,6 +448,10 @@ func use_ultimate() -> void:
 		FactionSystem.use_ultimate(self)
 		if animation_player.has_animation("skill_3"):
 			animation_player.play("skill_3")
+
+## 设置虚拟摇杆输入
+func set_joystick_input(direction: Vector2) -> void:
+	joystick_direction = direction
 
 ## 输入处理
 func _input(event: InputEvent) -> void:

@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/virtual_joystick.gd" id="1"]
+
+[node name="VirtualJoystick" type="Control"]
+anchors_preset = 10
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="OuterRing" type="TextureRect" parent="."]
+visible = false
+custom_minimum_size = Vector2(160, 160)
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="InnerKnob" type="TextureRect" parent="."]
+visible = false
+custom_minimum_size = Vector2(60, 60)
+offset_left = -30.0
+offset_top = -30.0
+offset_right = 30.0
+offset_bottom = 30.0
+mouse_filter = 2
+expand_mode = 1
