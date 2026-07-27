@@ -1,5 +1,6 @@
 ## 攻击预警指示器
 ## 在Boss攻击前显示危险区域
+## TODO: 当前未被Boss脚本调用，等待Boss技能系统集成
 class_name WarningIndicator
 extends Node2D
 

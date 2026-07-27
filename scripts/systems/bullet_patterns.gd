@@ -1,5 +1,6 @@
 ## 弹幕模式生成器
 ## 提供Boss和敌人常用的弹幕模式
+## TODO: 当前未被任何脚本引用，等待Boss弹幕系统集成
 class_name BulletPatterns
 extends Node
 

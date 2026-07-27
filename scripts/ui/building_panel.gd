@@ -84,7 +84,7 @@ func _refresh_grid() -> void:
 			continue
 		var level = BuildingSystem.get_building_level(building_id)
 		var bonus = BuildingSystem.get_building_bonus(building_id)
-		var meta: Dictionary = {}
+		var meta: Dictionary = BuildingData.META.get(building_id, {})
 		var name_lbl: Label = card.get_node("VBox/Name")
 		var level_lbl: Label = card.get_node("VBox/Level")
 		var bonus_lbl: Label = card.get_node("VBox/Bonus")

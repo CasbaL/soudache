@@ -14,6 +14,8 @@ extends Control
 @onready var portal_btn: Button = $BuildingGrid/Portal
 @onready var shop_btn: Button = $BuildingGrid/Shop
 @onready var treasure_vault_btn: Button = $BuildingGrid/TreasureVault
+@onready var inventory_btn: Button = $InventoryButton
+@onready var back_btn: Button = $BackButton
 
 # 资源显示
 @onready var spirit_stone_label: Label = $Resources/SpiritStone
@@ -33,7 +35,9 @@ func _ready() -> void:
 	portal_btn.pressed.connect(_on_building_pressed.bind("portal"))
 	shop_btn.pressed.connect(_on_building_pressed.bind("shop"))
 	treasure_vault_btn.pressed.connect(_on_building_pressed.bind("treasure_vault"))
-	
+	inventory_btn.pressed.connect(_on_warehouse_pressed)
+	back_btn.pressed.connect(_on_back_pressed)
+
 	# 更新资源显示
 	_update_resources()
 
@@ -52,6 +56,16 @@ func _on_explore_pressed() -> void:
 func _on_equipment_pressed() -> void:
 	print("[HavenMain] 打开装备界面")
 	get_tree().change_scene_to_file("res://scenes/ui/equipment_panel.tscn")
+
+## 仓库按钮
+func _on_warehouse_pressed() -> void:
+	print("[HavenMain] 打开仓库界面")
+	get_tree().change_scene_to_file("res://scenes/ui/warehouse_panel.tscn")
+
+## 返回门派选择
+func _on_back_pressed() -> void:
+	print("[HavenMain] 返回门派选择")
+	get_tree().change_scene_to_file("res://scenes/ui/faction_select.tscn")
 
 ## 建筑按钮点击
 func _on_building_pressed(building_id: String) -> void:
