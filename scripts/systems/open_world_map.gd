@@ -179,10 +179,12 @@ func _get_zone_type(x: int, y: int, max_x: int, max_y: int) -> ZoneType:
 			return ZoneType.ELITE
 		return ZoneType.RESOURCE
 	
-	# 入口区域：出生点和撤离点
+	# 入口区域：出生点
 	if x == 0 and y == 0:
 		return ZoneType.SPAWN
-	if x == max_x - 1 and y == max_y - 1:
+	
+	# 撤离点：右下角区域
+	if x >= max_x - 2 and y >= max_y - 2:
 		return ZoneType.EXTRACT
 	
 	# NPC区域（随机）
@@ -320,6 +322,11 @@ func _create_random_decoration() -> Node2D:
 ## 生成实体
 func _spawn_entities() -> void:
 	print("[OpenWorldMap] 开始生成实体...")
+	print("[OpenWorldMap] 敌人生成点: %d" % _enemy_spawns.size())
+	print("[OpenWorldMap] 资源生成点: %d" % _resource_spawns.size())
+	print("[OpenWorldMap] NPC位置: %d" % _npc_positions.size())
+	print("[OpenWorldMap] 撤离点: %d" % _extract_points.size())
+	print("[OpenWorldMap] Boss位置: %s" % str(_boss_position))
 	
 	# 生成敌人
 	_spawn_enemies()
